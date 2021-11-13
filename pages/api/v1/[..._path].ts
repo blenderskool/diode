@@ -2,14 +2,16 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { ApiMethod } from '@prisma/client';
 import axios from 'axios';
 import { URL } from 'url';
+import { performance } from 'perf_hooks';
 
 import type { ApiRouteWithProjectSecrets, QueryParams, ExpandedHeaders } from './_types';
 
 import getApiRoute from '../../../lib/internals/get-api-route';
 import { sendResponse } from '../../../lib/internals/send-response';
-import { addQueryParams, expandObjectEntries, mergeHeaders, movingAverage } from '../../../lib/internals/utils';
+import { addQueryParams, expandObjectEntries, mergeHeaders, movingAverage, substituteSecrets } from '../../../lib/internals/utils';
 import { middlewareCache, middlewareRatelimit, middlewareRestriction } from '../../../lib/middlewares';
 import prisma from '../../../lib/prisma';
+import { decryptSecret } from '../../../lib/internals/secrets';
 
 
 // This code is from Next.js API Routes Middleware docs
@@ -50,17 +52,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await runMiddleware(req, res, middlewareRatelimit(apiRoute));
   await runMiddleware(req, res, middlewareCache(apiRoute));
 
+  // Decrypt the project secrets
+  const secrets = Object.fromEntries(apiRoute.project.Secret.map(({ name, secret }) => [name, decryptSecret(secret)]));
+
   // Request preparation
   const requestUrl = new URL(`${apiRoute.apiUrl}/${path.join('/')}`);
   const currentQueryParams: QueryParams = expandObjectEntries(req.query);
   // Add query params
-  addQueryParams(requestUrl, apiRoute.queryParams as QueryParams);
+  addQueryParams(requestUrl, substituteSecrets(apiRoute.queryParams as QueryParams, secrets));
   addQueryParams(requestUrl, currentQueryParams);
 
   // Add request headers
   delete req.headers.host;
   const currentHeaders: ExpandedHeaders = expandObjectEntries(req.headers);
-  const requestHeaders = mergeHeaders(apiRoute.headers as ExpandedHeaders, currentHeaders);
+  const requestHeaders = mergeHeaders(substituteSecrets(apiRoute.headers as ExpandedHeaders, secrets), currentHeaders);
 
   // Request made
   try {

@@ -1,7 +1,8 @@
-import { NextApiResponse } from 'next';
+import type { NextApiResponse } from 'next';
 import type { OutgoingHttpHeaders } from 'http';
 import type { QueryParams, ExpandedHeaders } from '../../pages/api/v1/_types';
 import type { ApiRoute } from '@prisma/client';
+import { render } from 'micromustache';
 
 /**
  * Adds query params to the given URL object
@@ -72,4 +73,18 @@ export function expandObjectEntries(object: { [key: string]: string | string[] }
  */
 export function movingAverage(apiRoute: ApiRoute, timeTaken: number) {
   return Math.round((apiRoute.avgResponseMs * (apiRoute.successes) + timeTaken) / (apiRoute.successes + 1));
+}
+
+/**
+ * Substitues the values of secrets in the query params or headers
+ * @param query query params or headers array
+ * @param secrets mapping of secret names with their values
+ * @returns query params or headers with subsituted secrets
+ */
+export function substituteSecrets(query: QueryParams | ExpandedHeaders, secrets: Record<string, string>) {
+  for(const entry of query) {
+    entry[1] = render(entry[1], secrets);
+  }
+
+  return query;
 }
