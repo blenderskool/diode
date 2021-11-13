@@ -8,10 +8,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^1.1.1",
+    "@chakra-ui/react": "^1.7.1",
+    "@emotion/react": "^11.5.0",
+    "@emotion/styled": "^11.3.0",
+    "@fontsource/inter": "^4.5.0",
+    "@fontsource/raleway": "^4.5.0",
     "@prisma/client": "^3.4.2",
     "axios": "^0.24.0",
     "cors": "^2.8.5",
     "express-ipfilter": "^1.2.0",
+    "framer-motion": "^4.1.17",
     "get-stream": "^6.0.1",
     "ioredis": "^4.28.0",
     "micromustache": "^8.0.3",
