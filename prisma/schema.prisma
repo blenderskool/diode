@@ -9,3 +9,37 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Project {
+  id       String     @id @default(uuid())
+  name     String
+  ApiRoute ApiRoute[]
+  Secret   Secret[]
+}
+
+enum ApiMethod {
+  GET
+  POST
+  PUT
+  DELETE
+}
+
+model ApiRoute {
+  id          String    @id
+  name        String
+  apiUrl      String
+  method      ApiMethod
+  queryParams Json
+  headers     Json
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id])
+}
+
+model Secret {
+  secret    String
+  name      String
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+
+  @@unique([projectId, name])
+}
