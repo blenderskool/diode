@@ -1,6 +1,7 @@
 import { NextApiResponse } from 'next';
 import type { OutgoingHttpHeaders } from 'http';
 import type { QueryParams, ExpandedHeaders } from '../../pages/api/v1/_types';
+import type { ApiRoute } from '@prisma/client';
 
 /**
  * Adds query params to the given URL object
@@ -61,4 +62,14 @@ export function expandObjectEntries(object: { [key: string]: string | string[] }
     });
   }
   return result;
+}
+
+/**
+ * Calculates a running average
+ * @param apiRoute ApiRoute object
+ * @param timeTaken current time taken
+ * @returns computed average
+ */
+export function movingAverage(apiRoute: ApiRoute, timeTaken: number) {
+  return Math.round((apiRoute.avgResponseMs * (apiRoute.successes) + timeTaken) / (apiRoute.successes + 1));
 }

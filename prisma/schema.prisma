@@ -50,6 +50,11 @@ model ApiRoute {
   // Caching middleware config
   caching Json @default("{}")
 
+  // Analytics
+  successes     Int @default(0)
+  fails         Int @default(0)
+  avgResponseMs Int @default(0)
+
   @@unique([projectId, name])
 }
 
