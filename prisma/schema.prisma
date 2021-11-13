@@ -34,8 +34,8 @@ model ApiRoute {
   name        String
   apiUrl      String
   method      ApiMethod
-  queryParams Json
-  headers     Json
+  queryParams Json      @default("[]")
+  headers     Json      @default("[]")
   projectId   String
   project     Project   @relation(fields: [projectId], references: [id])
 
@@ -45,7 +45,12 @@ model ApiRoute {
   allowedIps     String[]
 
   // Rate Limiting middleware config
-  rateLimiting Json
+  rateLimiting Json @default("{}")
+
+  // Caching middleware config
+  caching Json @default("{}")
+
+  @@unique([projectId, name])
 }
 
 model Secret {

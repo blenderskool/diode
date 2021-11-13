@@ -8,7 +8,7 @@ import type { ApiRouteWithProjectSecrets, QueryParams, ExpandedHeaders } from '.
 import getApiRoute from '../../../lib/internals/get-api-route';
 import { sendResponse } from '../../../lib/internals/send-response';
 import { addQueryParams, expandObjectEntries, mergeHeaders } from '../../../lib/internals/utils';
-import { middlewareRatelimit, middlewareRestriction } from '../../../lib/middlewares';
+import { middlewareCache, middlewareRatelimit, middlewareRestriction } from '../../../lib/middlewares';
 
 
 // This code is from Next.js API Routes Middleware docs
@@ -38,8 +38,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Get ApiRoute object from database
   const { apiRoute, path }: { apiRoute: ApiRouteWithProjectSecrets, path: string[] } = await runMiddleware(req, res, getApiRoute);
 
-  console.log(req.method);
-
   if (req.method !== "OPTIONS" && req.method !== apiRoute.method) {
     // Incorrect request method used
     res.status(405).send("Method not allowed");
@@ -49,6 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Middleware plugins
   await runMiddleware(req, res, middlewareRestriction(apiRoute));
   await runMiddleware(req, res, middlewareRatelimit(apiRoute));
+  await runMiddleware(req, res, middlewareCache(apiRoute));
 
   // Request preparation
   const requestUrl = new URL(`${apiRoute.apiUrl}/${path.join('/')}`);

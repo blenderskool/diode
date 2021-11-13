@@ -37,6 +37,13 @@ export function mergeHeaders(...manyHeaders: ExpandedHeaders[]): Record<string, 
  */
 export function setAllHeaders(res: NextApiResponse, headers: OutgoingHttpHeaders) {
   Object.entries(headers)
+    .filter(([key]) => {
+      /**
+       * Remove access-control headers from API response as
+       * custom ones will be added by "Restriction" middleware
+       */
+      return !key.toLowerCase().startsWith('access-control-');
+    })
     .forEach(([key, value]) => value && res.setHeader(key, value));
 }
 
