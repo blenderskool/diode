@@ -8,7 +8,7 @@ import type { ApiRouteWithProjectSecrets, QueryParams, ExpandedHeaders } from '.
 import getApiRoute from '../../../lib/internals/get-api-route';
 import { sendResponse } from '../../../lib/internals/send-response';
 import { addQueryParams, expandObjectEntries, mergeHeaders } from '../../../lib/internals/utils';
-import { middlewareRatelimit } from '../../../lib/middlewares';
+import { middlewareRatelimit, middlewareRestriction } from '../../../lib/middlewares';
 
 
 // This code is from Next.js API Routes Middleware docs
@@ -18,7 +18,8 @@ function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function):
   return new Promise((resolve, reject) => {
     fn(req, res, (result: any) => {
       if (result instanceof Error) {
-        return reject(result);
+        res.status(500).send(result.message);
+        return;
       }
 
       return resolve(result);
@@ -37,7 +38,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Get ApiRoute object from database
   const { apiRoute, path }: { apiRoute: ApiRouteWithProjectSecrets, path: string[] } = await runMiddleware(req, res, getApiRoute);
 
+  console.log(req.method);
+
+  if (req.method !== "OPTIONS" && req.method !== apiRoute.method) {
+    // Incorrect request method used
+    res.status(405).send("Method not allowed");
+    return;
+  }
+
   // Middleware plugins
+  await runMiddleware(req, res, middlewareRestriction(apiRoute));
   await runMiddleware(req, res, middlewareRatelimit(apiRoute));
 
   // Request preparation

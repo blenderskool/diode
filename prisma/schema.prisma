@@ -24,6 +24,11 @@ enum ApiMethod {
   DELETE
 }
 
+enum Restriction {
+  IP
+  HTTP
+}
+
 model ApiRoute {
   id          String    @id
   name        String
@@ -33,6 +38,11 @@ model ApiRoute {
   headers     Json
   projectId   String
   project     Project   @relation(fields: [projectId], references: [id])
+
+  // Restriction middleware config
+  restriction    Restriction?
+  allowedOrigins String[]
+  allowedIps     String[]
 
   // Rate Limiting middleware config
   rateLimiting Json
