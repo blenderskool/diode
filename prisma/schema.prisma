@@ -33,6 +33,9 @@ model ApiRoute {
   headers     Json
   projectId   String
   project     Project   @relation(fields: [projectId], references: [id])
+
+  // Rate Limiting middleware config
+  rateLimiting Json
 }
 
 model Secret {

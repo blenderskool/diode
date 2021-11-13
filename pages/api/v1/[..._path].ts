@@ -8,6 +8,7 @@ import type { ApiRouteWithProjectSecrets, QueryParams, ExpandedHeaders } from '.
 import getApiRoute from '../../../lib/internals/get-api-route';
 import { sendResponse } from '../../../lib/internals/send-response';
 import { addQueryParams, expandObjectEntries, mergeHeaders } from '../../../lib/internals/utils';
+import { middlewareRatelimit } from '../../../lib/middlewares';
 
 
 // This code is from Next.js API Routes Middleware docs
@@ -35,6 +36,9 @@ function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function):
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Get ApiRoute object from database
   const { apiRoute, path }: { apiRoute: ApiRouteWithProjectSecrets, path: string[] } = await runMiddleware(req, res, getApiRoute);
+
+  // Middleware plugins
+  await runMiddleware(req, res, middlewareRatelimit(apiRoute));
 
   // Request preparation
   const requestUrl = new URL(`${apiRoute.apiUrl}/${path.join('/')}`);
@@ -71,7 +75,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (axios.isAxiosError(err)) {
       // Response preparation
       // TODO: Handle case when err.response is undefined
-      console.log("Axios err", err)
+      console.log("Axios error", err);
       sendResponse(res, err.response);
     } else {
       console.log("An error occurred!", err);
