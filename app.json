@@ -1,0 +1,27 @@
+{
+  "name": "Diode",
+  "description": "Open source API proxy server with an easy-to-use dashboard for configuring middlewares and secrets.",
+  "repository": "https://github.com/blenderskool/diode",
+  "stack": "container",
+  "scripts": {
+    "postdeploy": "npx prisma migrate deploy"
+  },
+  "env": {
+    "SECRETS_KEY": {
+      "description": "AES256 32-bytes hexadecimal string",
+      "value": "7387037c9716a739ae6a80232cfce456"
+    },
+    "SECRETS_IV": {
+      "description": "AES256-16-bytes-hexadecimal-string",
+      "value": "979f27a599b31ab7"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql",
+      "options": {
+        "version": "9.5"
+      }
+    }
+  ]
+}
