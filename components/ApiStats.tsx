@@ -3,9 +3,10 @@ import { StatGroup, Stat, StatLabel, StatNumber, Divider } from '@chakra-ui/reac
 type Props = {
   successes: number;
   fails: number;
+  avgResponseTime?: number;
 };
 
-export default function ApiStats({ successes, fails }: Props) {
+export default function ApiStats({ successes, fails, avgResponseTime }: Props) {
   return (
     <StatGroup gridGap="8">
       <Stat>
@@ -17,6 +18,17 @@ export default function ApiStats({ successes, fails }: Props) {
         <StatLabel whiteSpace="nowrap" textColor="red.500" fontWeight="600">Failed calls</StatLabel>
         <StatNumber>{fails}</StatNumber>
       </Stat>
+      {
+        avgResponseTime !== undefined && (
+          <>
+            <Divider orientation="vertical" />
+            <Stat>
+              <StatLabel whiteSpace="nowrap" textColor="blue.500" fontWeight="600">Average time(ms)</StatLabel>
+              <StatNumber>{avgResponseTime}</StatNumber>
+            </Stat>
+          </>
+        )
+      }
     </StatGroup>
   );
 }
