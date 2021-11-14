@@ -138,7 +138,7 @@ export default function Projects({ projects }: Props) {
 
             <ModalFooter>
               <Button type="submit" colorScheme="green" bg="green.400" width="full" isLoading={creatingProject}>
-                Create project
+                Create project ›
               </Button>
             </ModalFooter>
           </form>
