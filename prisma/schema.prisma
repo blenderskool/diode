@@ -54,8 +54,6 @@ model ApiRoute {
   successes     Int @default(0)
   fails         Int @default(0)
   avgResponseMs Int @default(0)
-
-  @@unique([projectId, name])
 }
 
 model Secret {
