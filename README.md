@@ -26,6 +26,12 @@ _Fun fact: All of this happens without you have to write a single line of code._
 - 💙 Open source, can be self-hosted.
 
 
+### Try it out
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/blenderskool/diode)
+
+_Note: Deploying on Heroku free plan may cause higher latencies_
+
+
 ## Project Setup
 ### Pre-requisites:
 - Node.js and npm installed.
