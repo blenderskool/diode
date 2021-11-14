@@ -5,8 +5,8 @@ COPY ./ ./
 
 RUN npm install
 RUN npm run build
-ENV SECRETS_KEY
-ENV SECRETS_IV
+ENV SECRETS_KEY=
+ENV SECRETS_IV=
 
 EXPOSE 3000
 
