@@ -3,6 +3,8 @@ import { DeleteIcon } from '@chakra-ui/icons';
 import SectionHeading from '../../../components/SectionHeading';
 import { useState } from 'react';
 
+export const getServerSideProps = () => ({ props: {} });
+
 type Props = {
   onDelete: Function;
   buttonText: string;

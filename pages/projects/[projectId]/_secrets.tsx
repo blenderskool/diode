@@ -7,6 +7,8 @@ import axios from 'axios';
 
 import SectionHeading from '../../../components/SectionHeading';
 
+export const getServerSideProps = () => ({ props: {} });
+
 type Props = {
   project: (Project & {
     Secret: {
