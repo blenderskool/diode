@@ -56,8 +56,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   });
 
   const stats: ProjectStats = {
-    totalSuccesses: project.ApiRoute.reduce((sum, api) => sum + api.successes, 0),
-    totalFails: project.ApiRoute.reduce((sum, api) => sum + api.fails, 0),
+    totalSuccesses: !project ? 0 : project.ApiRoute.reduce((sum, api) => sum + api.successes, 0),
+    totalFails: !project ? 0 : project.ApiRoute.reduce((sum, api) => sum + api.fails, 0),
   };
 
   return { props: { project, stats } };
