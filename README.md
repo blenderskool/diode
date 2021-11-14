@@ -5,6 +5,9 @@
 <br />
 <br />
 
+![](https://user-images.githubusercontent.com/21107799/141688536-1dfc2db7-d334-493e-b23f-fe7e9cc1b6af.png)
+
+
 ### What does Diode do?
 Third party APIs make it easy to integrate functionalities across apps. But using them on a purely front-end project is a hassle. Most of the time, the API endpoints require an API key which cannot be exposed on the frontend. Hence, most of us setup a proxy backend server that makes the request to the third party API with the API keys and make the frontend request this proxy server instead. While it might be a trivial solution that shouldn't take a lot of time to implement, it can get very repeatable and tedious over time.
 
