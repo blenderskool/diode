@@ -3,9 +3,6 @@
   "description": "Open source API proxy server with an easy-to-use dashboard for configuring middlewares and secrets.",
   "repository": "https://github.com/blenderskool/diode",
   "stack": "container",
-  "scripts": {
-    "postdeploy": "npx prisma migrate deploy"
-  },
   "env": {
     "SECRETS_KEY": {
       "description": "AES256 32-bytes hexadecimal string",
