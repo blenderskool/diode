@@ -2,15 +2,14 @@ import { ApiMethod, Project as ProjectType } from '@prisma/client';
 import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { useState } from 'react';
-import { Flex, Heading, Box, Divider, Button } from '@chakra-ui/react';
-import { DeleteIcon } from '@chakra-ui/icons';
+import { Flex, Heading, Divider } from '@chakra-ui/react';
+import axios from 'axios';
 
 import ApiStats from '../../../components/ApiStats';
 import BackLink from '../../../components/BackLink';
-import HelpText from '../../../components/HelpText';
-import Secrets from './_secrets';
 import Apis from './_apis';
+import Secrets from './_secrets';
+import DangerZone from './_danger-zone';
 import prisma from '../../../lib/prisma';
 
 type ProjectData = (ProjectType & {
@@ -70,16 +69,11 @@ type Props = {
 };
 
 export default function Project({ project, stats }: Props) {
-  const [deletingProject, setDeletingProject] = useState(false);
   const router = useRouter();
   const projectName = project.name + (!project.name.endsWith('project') ? ' project' : '');
 
   const deleteProject = async () => {
-    if (deletingProject) return;
-
-    setDeletingProject(true);
-    await fetch(`/api/projects/${project.id}`, { method: 'DELETE' });
-    setDeletingProject(false);
+    await axios.delete(`/api/projects/${project.id}`);
     router.replace('/projects');
   };
 
@@ -102,21 +96,11 @@ export default function Project({ project, stats }: Props) {
 
       <Divider my="20" />
 
-      <Box mb="20">
-        <Flex justifyContent="space-between">
-          <div>
-            <Heading size="md" fontWeight="800" color="gray.600">🚨 Danger zone</Heading>
-            <HelpText mt="2">
-              Deleting a project removes all the API routes and Secrets associated with it.
-              <br />
-              This action is irreverisble.
-            </HelpText>
-          </div>
-          <Button colorScheme="red" color="red.500" variant="outline" rightIcon={<DeleteIcon w="3" h="3" />} onClick={deleteProject} isLoading={deletingProject}>
-            Delete project
-          </Button>
-        </Flex>
-      </Box>
+      <DangerZone mb="32" onDelete={deleteProject} buttonText="Delete project">
+        Deleting a project removes all the API routes and Secrets associated with it.
+        <br />
+        This action is irreverisble.
+      </DangerZone>
     </>
   );
 }
