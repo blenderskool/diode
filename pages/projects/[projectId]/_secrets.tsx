@@ -1,11 +1,11 @@
-import { Box, Flex, Heading, Text, Button, IconButton, Tooltip, Input, useToast } from '@chakra-ui/react';
+import { Box, Flex, Text, Button, IconButton, Tooltip, Input, useToast } from '@chakra-ui/react';
 import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { Project } from '@prisma/client';
 import axios from 'axios';
 
-import HelpText from '../../../components/HelpText';
+import SectionHeading from '../../../components/SectionHeading';
 
 type Props = {
   project: (Project & {
@@ -62,14 +62,11 @@ export default function Secrets({ project, ...props }: Props) {
   return (
     <Box {...props}>
       <Flex justifyContent="space-between">
-        <div>
-          <Heading size="md" fontWeight="800" color="gray.600">🕶️ Secrets</Heading>
-          <HelpText mt="2">
-            Secrets are variables that can be consumed by the API endpoints in this project during calls.
-            <br />
-            These are <strong>encrypted and stored</strong> on the database.
-          </HelpText>
-        </div>
+        <SectionHeading heading="🕶️ Secrets">
+          Secrets are variables that can be consumed by the API endpoints in this project during calls.
+          <br />
+          These are <strong>encrypted and stored</strong> on the database.
+        </SectionHeading>
         <Button colorScheme="green" bg="green.400" rightIcon={<AddIcon w="3" h="3" />} onClick={() => setShowNewForm(true)}>
           New secret
         </Button>

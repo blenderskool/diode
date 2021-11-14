@@ -28,7 +28,7 @@ import { useReducer, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 
-import HelpText from '../../../components/HelpText';
+import SectionHeading from '../../../components/SectionHeading';
 
 type Props = {
   project: (Project & {
@@ -118,10 +118,9 @@ export default function Apis({ project, ...props }: Props) {
     <>
       <Box {...props}>
         <Flex justifyContent="space-between">
-          <div>
-            <Heading size="md" fontWeight="800" color="gray.600">🔌 API routes</Heading>
-            <HelpText mt="2">API endpoints that are configured with Diode.</HelpText>
-          </div>
+          <SectionHeading heading="🔌 API routes">
+            API endpoints that are configured with Diode.
+          </SectionHeading>
           <Button onClick={() => dispatch({ type: 'SET_CREATION_MODAL', value: true })} colorScheme="green" bg="green.400" rightIcon={<AddIcon w="3" h="3" />}>
             New API route
           </Button>
@@ -142,8 +141,8 @@ export default function Apis({ project, ...props }: Props) {
                 <Flex alignItems="center" py="3" px="6">
                   <Tag>{api.method}</Tag>
                   <Text ml="4" fontWeight="600">{api.name}</Text>
-                  <Text ml="8" color="gray.500" fontSize="sm" textOverflow="ellipsis" maxW="250" whiteSpace="nowrap" overflowX="hidden">
-                    {api.apiUrl}
+                  <Text ml="8" color="gray.500" fontSize="sm" textOverflow="ellipsis" maxW="400" whiteSpace="nowrap" overflowX="hidden">
+                    {decodeURI(api.apiUrl)}
                   </Text>
                   <Tooltip label="Remove this API route" fontSize="xs">
                     <IconButton
