@@ -1,5 +1,8 @@
 {
   "name": "diode",
+  "version": "1.0.0",
+  "author": "Akash Hamirwasia",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "next dev",
