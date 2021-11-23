@@ -1,0 +1,29 @@
+version: '3'
+services:
+  postgres:
+    image: "postgres:alpine"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: diodeDb
+
+  redis:
+    image: "redis:alpine"
+
+  diode:
+    image: "akashhamirwasia/diode:latest"
+    ports:
+      - 80:3000
+    depends_on:
+      - postgres
+      - redis
+    links:
+      - postgres
+      - redis
+    environment:
+      DATABASE_URL: postgresql://root:root@postgres:5432/diodeDb?schema=public
+      REDIS_URL: redis://redis:6379
+      # Example values for encryption keys.
+      # Generating new keys is recommended for production use.
+      SECRETS_KEY: 7387037c9716a739ae6a80232cfce456
+      SECRETS_IV: 979f27a599b31ab7

@@ -12,7 +12,7 @@
 Third party APIs make it easy to integrate functionalities across apps. But using them on a purely front-end project is a hassle. Most of the time, the API endpoints require an API key which cannot be exposed on the frontend. Hence, most of us setup a proxy backend server that makes the request to the third party API with the API keys and make the frontend request this proxy server instead. While it might be a trivial solution that shouldn't take a lot of time to implement, it can get very repeatable and tedious over time.
 
 **Diode solves this** problem by abstracting this proxy server and allowing you to add and configure as many API routes and consume them directly on the frontend **without having to worry about exposing any API keys**! Since Diode sits in between all the requests going to the third-party server, it also makes it easy to add **commonly used middlewares to the API route** with just a click!  
-_Fun fact: All of this happens without you have to write a single line of code._
+_Fun fact: All of this happens without you having to write a single line of code._
 
 ### Features
 - 💡 Easy to use dashboard.
@@ -28,9 +28,9 @@ _Fun fact: All of this happens without you have to write a single line of code._
 
 ### Try it out
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/blenderskool/diode)
+[![Try in Play-With-Docker](./public/try-with-docker.svg)](https://labs.play-with-docker.com/?stack=https://raw.githubusercontent.com/blenderskool/diode/docker-compose.yml)
 
 _Note: Deploying on Heroku free plan may cause higher latencies_
-
 
 ## Project Setup
 ### Pre-requisites:
