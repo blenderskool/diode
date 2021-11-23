@@ -28,7 +28,7 @@ _Fun fact: All of this happens without you having to write a single line of code
 
 ### Try it out
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/blenderskool/diode)
-[![Try in Play-With-Docker](./public/try-with-docker.svg)](https://labs.play-with-docker.com/?stack=https://raw.githubusercontent.com/blenderskool/diode/docker-compose.yml)
+[![Try in Play-With-Docker](./public/try-with-docker.svg)](https://labs.play-with-docker.com/?stack=https://raw.githubusercontent.com/blenderskool/diode/master/docker-compose.yml)
 
 _Note: Deploying on Heroku free plan may cause higher latencies_
 
