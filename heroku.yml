@@ -5,7 +5,7 @@ setup:
 
 build:
   docker:
-    web: heroku/Dockerfile
+    web: heroku.Dockerfile
 
 release:
   image: web

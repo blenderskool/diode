@@ -1,7 +1,7 @@
 FROM node:14-alpine as app
 
 WORKDIR /app
-COPY ../ ../
+COPY ./ ./
 
 ENV SECRETS_KEY=
 ENV SECRETS_IV=
@@ -13,7 +13,7 @@ EXPOSE 3000
 
 RUN apk --update add redis
 
-COPY ./start.sh ./
-RUN chmod +x ./start.sh
+COPY ./heroku-docker.start.sh ./
+RUN chmod +x ./heroku-docker.start.sh
 
-CMD ["sh", "./start.sh"]
+CMD ["sh", "./heroku-docker.start.sh"]
