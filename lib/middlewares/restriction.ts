@@ -22,7 +22,7 @@ function createCorsOptions(apiRoute: ApiRoute): CorsOptions {
  */
 export default function middlewareRestriction(apiRoute: ApiRoute): Function {
   // No API restriction
-  if (!apiRoute.restriction) return (req, res, next) => next();
+  if (!apiRoute.restriction) return cors();
 
   switch (apiRoute.restriction) {
     case Restriction.IP:

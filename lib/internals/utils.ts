@@ -1,8 +1,8 @@
 import type { NextApiResponse } from 'next';
 import type { OutgoingHttpHeaders } from 'http';
-import type { QueryParams, ExpandedHeaders } from '../../pages/api/v1/_types';
 import type { ApiRoute } from '@prisma/client';
 import { render } from 'micromustache';
+import type { QueryParams, ExpandedHeaders } from '../../pages/api/v1/_types';
 
 /**
  * Adds query params to the given URL object
