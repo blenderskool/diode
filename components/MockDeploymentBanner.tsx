@@ -18,11 +18,9 @@ import { useState } from 'react';
 export default function MockDeploymentBanner() {
   const [modalOpen, setModalOpen] = useState(false);
 
-  if (process.env.NEXT_PUBLIC_MOCK_DEPLOYMENT !== "true") return null;
-
   return (
     <>
-      <Flex bg="red.100" py="1" color="red.600" fontWeight="semibold" fontSize="sm" alignItems="center" justifyContent="center">
+      <Flex bg="red.100" h="8" color="red.600" fontWeight="semibold" fontSize="sm" alignItems="center" justifyContent="center">
         This is a mock deployment, all features are still available in a limited capacity
         <Button colorScheme="red" size="xs" ml="4" onClick={() => setModalOpen(true)}>
           Read more
