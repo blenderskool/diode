@@ -27,6 +27,7 @@ import { Project } from '@prisma/client';
 import axios from 'axios';
 
 import prisma from '../../lib/prisma';
+import HelpText from '../../components/HelpText';
 
 type ProjectData = (Project & {
   _count: {
@@ -83,11 +84,11 @@ export default function Projects({ projects }: Props) {
           New Project
         </Button>
       </Flex>
-      <Text color="gray.600" mt="4" lineHeight="tall">
+      <HelpText mt="4">
         Projects are used to group related API endpoints.
         <br />
         Every project has a set of Secrets which are consumed by APIs in that project.
-      </Text>
+      </HelpText>
       <Grid mt="16" gap="4" templateColumns="repeat(3, 1fr)">
         {projects.map((project) => (
           <NextLink href={`/projects/${project.id}`} key={project.id}>
