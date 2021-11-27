@@ -175,6 +175,15 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     }
   });
 
+  if (apiRoute === null) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: "/404"
+      },
+    };
+  }
+
   return { props: { apiRoute } };
 };
 

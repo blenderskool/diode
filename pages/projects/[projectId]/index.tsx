@@ -55,6 +55,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
 
+  if (project === null) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: "/404"
+      },
+    };
+  }
+
   const stats: ProjectStats = {
     totalSuccesses: !project ? 0 : project.ApiRoute.reduce((sum, api) => sum + api.successes, 0),
     totalFails: !project ? 0 : project.ApiRoute.reduce((sum, api) => sum + api.fails, 0),
