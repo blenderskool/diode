@@ -29,7 +29,7 @@ function createCorsOptions(apiRoute: ApiRouteWithMiddlewares): CorsOptions {
  * @param apiRoute ApiRoute object
  * @returns middleware function
  */
-export default function restriction(apiRoute: ApiRouteWithMiddlewares): Function {
+export function restriction(apiRoute: ApiRouteWithMiddlewares): Function {
   // No API restriction
   const options = apiRoute.restriction;
   if (!options.enabled) return cors();
