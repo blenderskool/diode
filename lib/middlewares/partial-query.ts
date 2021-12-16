@@ -3,9 +3,7 @@ import { Readable } from 'stream';
 import * as mask from 'json-mask';
 import getStream from 'get-stream';
 
-export type PartialQueryOptions = {
-  enabled: boolean;
-};
+export interface PartialQueryOptions extends MiddlewareOptions {};
 
 export function partialJsonQuery(filterString: string) {
   return async (req: NextApiRequest, res: NextApiResponse, next: Function) => {

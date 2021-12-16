@@ -6,7 +6,11 @@ declare global {
     headers: Record<string, string>,
     data: Stream,
     [key: string]: any,
-  };
+  }
+
+  interface MiddlewareOptions {
+    enabled: boolean;
+  }
 }
 
 declare module 'next' {
@@ -14,5 +18,5 @@ declare module 'next' {
     locals: {
       result: ResultResponse,
     },
-  };
+  }
 }

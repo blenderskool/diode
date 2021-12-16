@@ -4,8 +4,7 @@ import { ApiRouteWithMiddlewares } from '../../pages/api/v1/_types';
 
 import redis from '../redis';
 
-export type RateLimitingOptions = {
-  enabled: boolean;
+export interface RateLimitingOptions extends MiddlewareOptions {
   windowSize: number,
   maxRequests: number,
 };

@@ -8,8 +8,7 @@ import redis from '../redis';
 import { setAllHeaders } from '../internals/utils';
 import { ApiRouteWithMiddlewares } from '../../pages/api/v1/_types';
 
-export type CachingOptions = {
-  enabled: boolean;
+export interface CachingOptions extends MiddlewareOptions {
   // Duration in seconds
   duration: number;
 };
@@ -59,7 +58,7 @@ export function cacheWrite(apiRoute: ApiRouteWithMiddlewares) {
   return async (req: NextApiRequest, res: NextApiResponse, next) => {
     const cachingOpts = apiRoute.caching as CachingOptions;
     // Caching is only supported on GET requests
-    if (Object.keys(cachingOpts).length === 0 || apiRoute.method !== ApiMethod.GET) {
+    if (!cachingOpts.enabled || apiRoute.method !== ApiMethod.GET) {
       next();
       return;
     }
