@@ -45,9 +45,8 @@ export default function cache(apiRoute: ApiRouteWithMiddlewares) {
       const headers: OutgoingHttpHeaders = JSON.parse(cachedHeaders);
 
       setAllHeaders(res, headers);
-      res
-        .setHeader('cache-control', `max-age=${Math.max(0, cacheAge)}`)
-        .status(200);
+      res.setHeader('cache-control', `max-age=${Math.max(0, cacheAge)}`);
+      res.status(200);
       Readable.from(cachedResult).pipe(res);
       return;
     }
