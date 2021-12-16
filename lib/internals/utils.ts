@@ -1,8 +1,7 @@
 import type { NextApiResponse } from 'next';
 import type { OutgoingHttpHeaders } from 'http';
-import type { ApiRoute } from '@prisma/client';
 import { render } from 'micromustache';
-import type { QueryParams, ExpandedHeaders } from '../../pages/api/v1/_types';
+import type { QueryParams, ExpandedHeaders, ApiRouteWithMiddlewares } from '../../pages/api/v1/_types';
 
 /**
  * Adds query params to the given URL object
@@ -71,7 +70,7 @@ export function expandObjectEntries(object: { [key: string]: string | string[] }
  * @param timeTaken current time taken
  * @returns computed average
  */
-export function movingAverage(apiRoute: ApiRoute, timeTaken: number) {
+export function movingAverage(apiRoute: ApiRouteWithMiddlewares, timeTaken: number) {
   return Math.round((apiRoute.avgResponseMs * (apiRoute.successes) + timeTaken) / (apiRoute.successes + 1));
 }
 
