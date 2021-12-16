@@ -23,12 +23,13 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { CheckIcon, CopyIcon } from '@chakra-ui/icons';
-import { ApiMethod, ApiRoute, Project, Restriction } from '@prisma/client';
-import { useEffect, useReducer, useState } from 'react';
+import { ApiMethod, Project } from '@prisma/client';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import axios from 'axios';
 import copy from 'copy-to-clipboard';
+import { useFieldArray, useForm } from 'react-hook-form';
 
 import SectionHeading from '../../../../components/SectionHeading';
 import HelpText from '../../../../components/HelpText';
@@ -40,7 +41,8 @@ import prisma from '../../../../lib/prisma';
 import { RateLimitingOptions } from '../../../../lib/middlewares/rate-limit';
 import { CachingOptions } from '../../../../lib/middlewares/cache';
 import DangerZone from '../_danger-zone';
-import { ExpandedHeaders, QueryParams } from '../../../api/v1/_types';
+import { ApiRouteWithMiddlewares, QueryParams } from '../../../api/v1/_types';
+import { RestrictionOptions } from '../../../../lib/middlewares/restriction';
 
 
 const MiddlewareCard = ({ ...props }) => (
@@ -61,15 +63,16 @@ const MiddlewareCard = ({ ...props }) => (
   />
 );
 
-type ApiConfigState = {
+type FormData = {
   method: string;
   apiUrl: string;
-  queryParams: [string, string][];
-  headers: [string, string][];
+  queryParams: { name: string, value: string }[];
+  headers: { name: string, value: string }[];
 
-  restriction: Restriction | null;
-  allowedIps: string;
-  allowedOrigins: string;
+  restriction: Omit<RestrictionOptions, 'allowedIps' | 'allowedOrigins'> & {
+    allowedIps: string;
+    allowedOrigins: string;
+  };
 
   rateLimiting: RateLimitingOptions;
   caching: CachingOptions;
@@ -81,81 +84,6 @@ const applyQueryParams = (apiUrl: string, query: QueryParams) => {
 
   return decodeURI(url.origin + url.pathname) + (query.length ? '?' + searchParams : '');
 };
-
-const apiConfigReducer = (state: ApiConfigState, action: { type: string, value?: any }) => {
-  switch (action.type) {
-    case "SET_METHOD":
-      return { ...state, method: action.value };
-    case "SET_APIURL": {
-      try {
-        const url = new URL(action.value);
-        return { ...state, apiUrl: action.value, queryParams: [...url.searchParams] };
-      } catch {
-        return { ...state, apiUrl: action.value };
-      }
-    }
-    case "ADD_QUERY_PARAM":
-      return {
-        ...state,
-        queryParams: [...state.queryParams, ['', '']],
-      };
-    case "REMOVE_QUERY_PARAM": {
-      const queryParams: QueryParams = state.queryParams.filter((_, i) => i !== action.value)
-      try {
-        return { ...state, queryParams, apiUrl: applyQueryParams(state.apiUrl, queryParams) };
-      } catch {
-        return { ...state, queryParams };
-      }
-    }
-    case "SET_QUERY_PARAM": {
-      const queryParams: QueryParams = state.queryParams.map((query, i) => (
-        i === action.value.idx ? [action.value.key, action.value.value] : [...query]
-      ));
-      try {
-        return { ...state, queryParams, apiUrl: applyQueryParams(state.apiUrl, queryParams) };
-      } catch {
-        return { ...state, queryParams };
-      }
-    }
-    case "ADD_HEADER":
-      return {
-        ...state,
-        headers: [...state.headers, ['', '']],
-      };
-    case "REMOVE_HEADER":
-      return { ...state, headers: state.headers.filter((_, i) => i !== action.value) };
-    case "SET_HEADER":
-      return {
-        ...state,
-        headers: state.headers.map((query, i) => (
-          i === action.value.idx ? [action.value.key, action.value.value] : [...query]
-        )),
-      };
-
-    case "SET_RESTRICTION_TYPE":
-      return { ...state, restriction: action.value };
-    case "SET_ALLOWED_ORIGINS":
-      return { ...state, allowedOrigins: action.value };
-    case "SET_ALLOWED_IPS":
-      return { ...state, allowedIps: action.value };
-
-    case "ENABLE_RATE_LIMITING":
-      return { ...state, rateLimiting: { windowSize: 60, maxRequests: 20 } };
-    case "DISABLE_RATE_LIMITING":
-      return { ...state, rateLimiting: {} };
-    case "SET_RATE_LIMITING_WINDOW":
-      return { ...state, rateLimiting: { ...state.rateLimiting, windowSize: parseInt(action.value) } };
-    case "SET_RATE_LIMITING_MAX_REQS":
-      return { ...state, rateLimiting: { ...state.rateLimiting, maxRequests: parseInt(action.value) } };
-
-    case "ENABLE_CACHING":
-      return { ...state, caching: { duration: 60 } };
-    case "DISABLE_CACHING":
-      return { ...state, caching: {} };
-    case "SET_CACHING_DURATION":
-      return { ...state, caching: { ...state.caching, duration: parseInt(action.value) } };
-  }
-}
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const routeId = params.routeId as string;
@@ -188,7 +116,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 };
 
 type Props = {
-  apiRoute: ApiRoute & {
+  apiRoute: ApiRouteWithMiddlewares & {
     project: Project & {
       Secret: {
         name: string;
@@ -198,29 +126,70 @@ type Props = {
 };
 
 export default function ApiRoutePage({ apiRoute }: Props) {
-  const [config, dispatch] = useReducer(apiConfigReducer, {
-    method: apiRoute.method,
-    apiUrl: applyQueryParams(apiRoute.apiUrl, apiRoute.queryParams as QueryParams),
-    queryParams: apiRoute.queryParams as QueryParams,
-    headers: apiRoute.headers as ExpandedHeaders,
-    restriction: apiRoute.restriction,
-    allowedIps: apiRoute.allowedIps.join(', '),
-    allowedOrigins: apiRoute.allowedOrigins.join(', '),
-    rateLimiting: apiRoute.rateLimiting as RateLimitingOptions,
-    caching: apiRoute.caching as CachingOptions,
+  const { register, handleSubmit, getValues, watch, control, setValue, formState: { isSubmitting } } = useForm<FormData>({
+    defaultValues: {
+      apiUrl: apiRoute.apiUrl,
+      method: apiRoute.method,
+      queryParams: [],
+      headers: [],
+      restriction: {
+        enabled: apiRoute.restriction.enabled ?? false,
+        type: apiRoute.restriction.type ?? 'HTTP',
+        allowedIps: apiRoute.restriction.allowedIps?.join?.(', ') ?? '',
+        allowedOrigins: apiRoute.restriction.allowedOrigins?.join?.(', ') ?? '',
+      },
+      rateLimiting: {
+        enabled: apiRoute.rateLimiting.enabled ?? false,
+        maxRequests: apiRoute.rateLimiting.maxRequests ?? 20,
+        windowSize: apiRoute.rateLimiting.windowSize ?? 60,
+      },
+      caching: {
+        enabled: apiRoute.caching.enabled ?? false,
+        duration: apiRoute.caching.duration ?? 120,
+      },
+    }
   });
+  const { append: appendHeader, remove: removeHeader, fields: headerFields } = useFieldArray({
+    control,
+    name: 'headers',
+  });
+  const { append: appendQueryParam, remove: removeQueryParam, fields: queryParamFields } = useFieldArray({
+    control,
+    name: 'queryParams',
+  });
+
   const router = useRouter();
   const toast = useToast();
   const [proxyUrl, setProxyUrl] = useState('');
-  const [isUpdating, setIsUpdating] = useState(false);
+
+  const syncUrlAndQueryParams = useCallback((_, { name, type }) => {
+    if (type !== 'change') return;
+
+    const [apiUrl, queryParams] = getValues(['apiUrl', 'queryParams']);
+
+    try {
+      if (name === 'apiUrl') {
+        const url = new URL(apiUrl);
+        setValue('queryParams', [...url.searchParams].map(([name, value]) => ({ name, value })));
+      } else if (name.startsWith('queryParams')) {
+        const qp: QueryParams = queryParams.map(({ name, value }) => [name, value]);
+        setValue('apiUrl', applyQueryParams(apiUrl, qp));
+      }
+    } catch(err) {
+      // Ignore error as further updates might resolve correctly
+      console.log(err);
+    }
+  }, [setValue, getValues]);
 
   useEffect(() => {
     setProxyUrl(`${window.location.origin}/api/v1/${apiRoute.id}`);
   }, [setProxyUrl, apiRoute.id]);
 
-  const isRestrictionsEnabled = config.restriction !== null;
-  const isRateLimitingEnabled = Object.keys(config.rateLimiting).length !== 0;
-  const isCachingEnabled = Object.keys(config.caching).length !== 0;
+  useEffect(() => {
+    return watch(syncUrlAndQueryParams).unsubscribe;
+  }, [watch, syncUrlAndQueryParams]);
+
+  const [isRestrictionsEnabled, isRateLimitingEnabled, isCachingEnabled] = watch(['restriction.enabled', 'rateLimiting.enabled', 'caching.enabled']);
 
   const copyProxyUrl = () => {
     try {
@@ -234,19 +203,22 @@ export default function ApiRoutePage({ apiRoute }: Props) {
   const updateRoute = async (e) => {
     e.preventDefault();
     try {
-      setIsUpdating(true);
+      const updatedApiRoute = getValues();
       await axios.post(`/api/routes/${apiRoute.id}`, {
-        ...config,
-        allowedIps: config.allowedIps.split(/,\s*/),
-        allowedOrigins: config.allowedOrigins.split(/,\s*/),
+        ...updatedApiRoute,
+        queryParams: updatedApiRoute.queryParams.map(header => [header.name, header.value]),
+        headers: updatedApiRoute.headers.map(header => [header.name, header.value]),
+        restriction: {
+          ...updatedApiRoute.restriction,
+          allowedIps: updatedApiRoute.restriction.allowedIps.split(/,\s*/),
+          allowedOrigins: updatedApiRoute.restriction.allowedOrigins.split(/,\s*/),
+        },
       });
       router.replace(router.asPath, undefined, { scroll: false });
       toast({ status: "success", title: "Changes saved successfully" });
     } catch(err) {
       console.log(err);
       toast({ status: "error", title: "Ah! There was an error, maybe try again" });
-    } finally {
-      setIsUpdating(false);
     }
   };
 
@@ -286,7 +258,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
 
       <Divider my="20" />
 
-      <form onSubmit={updateRoute}>
+      <form onSubmit={handleSubmit(updateRoute)}>
         {/* Api configuration section */}
         <Box>
           <SectionHeading heading="⚙️ Configuration" />
@@ -294,12 +266,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
           <Flex mt="8">
             <FormControl width="150px">
               <FormLabel>Method</FormLabel>
-              <Select
-                value={config.method}
-                onChange={(e) => dispatch({ type: "SET_METHOD", value: e.target.value })}
-                roundedRight="none"
-                required
-              >
+              <Select roundedRight="none" required {...register('method')}>
                 {Object.keys(ApiMethod).map((method) => <option key={method} value={method}>{method}</option>)}
               </Select>
             </FormControl>
@@ -311,8 +278,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                 ml="-1px"
                 roundedLeft="none"
                 required
-                value={config.apiUrl}
-                onChange={(e) => dispatch({ type: "SET_APIURL", value: e.target.value })}
+                {...register('apiUrl')}
               />
             </FormControl>
           </Flex>
@@ -331,7 +297,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                     bg="green.400"
                     onClick={(e) => {
                       e.stopPropagation();
-                      dispatch({ type: "ADD_QUERY_PARAM" });
+                      appendQueryParam({ name: '', value: '' });
                     }}
                   >
                     Add
@@ -344,24 +310,20 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                   You can refer to secrets in value field using <Code>{"{{ SECRET_NAME }}"}</Code>
                 </HelpText>
                 {
-                  config.queryParams.map(([key, value], i) => (
+                  queryParamFields.map((field, idx) => (
                     <QueryParamInput
-                      key={i}
-                      keyVal={key}
-                      valueVal={value}
-                      onKeyChange={(e) => dispatch({
-                        type: "SET_QUERY_PARAM",
-                        value: { idx: i, key: e.target.value, value }
-                      })}
-                      onValueChange={(e) => dispatch({
-                        type: "SET_QUERY_PARAM",
-                        value: { idx: i, key, value: e.target.value }
-                      })}
-                      onRemove={() => dispatch({ type: "REMOVE_QUERY_PARAM", value: i })}
+                      key={field.id}
+                      keyProps={register(`queryParams.${idx}.name`)}
+                      valueProps={register(`queryParams.${idx}.value`)}
+                      onRemove={() => {
+                        removeQueryParam(idx);
+                        // Explicit call to watch handler because fieldarray events are not captured by react-hook-form
+                        syncUrlAndQueryParams({}, { name: 'queryParams', type: 'change' });
+                      }}
                     />
                   ))
                 }
-                {config.queryParams.length === 0 && <Box textAlign="center" my="12" color="gray.600" fontWeight="600">No query parameters added</Box>}
+                {getValues('queryParams').length === 0 && <Box textAlign="center" my="12" color="gray.600" fontWeight="600">No query parameters added</Box>}
               </AccordionPanel>
             </AccordionItem>
             <AccordionItem>
@@ -377,7 +339,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                     bg="green.400"
                     onClick={(e) => {
                       e.stopPropagation();
-                      dispatch({ type: "ADD_HEADER" });
+                      appendHeader({ name: '', value: '' });
                     }}
                   >
                     Add
@@ -390,24 +352,16 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                   You can refer to secrets in value field using <Code>{"{{ SECRET_NAME }}"}</Code>
                 </HelpText>
                 {
-                  config.headers.map(([key, value], i) => (
+                  headerFields.map((field, idx) => (
                     <QueryParamInput
-                      key={i}
-                      keyVal={key}
-                      valueVal={value}
-                      onKeyChange={(e) => dispatch({
-                        type: "SET_HEADER",
-                        value: { idx: i, key: e.target.value, value }
-                      })}
-                      onValueChange={(e) => dispatch({
-                        type: "SET_HEADER",
-                        value: { idx: i, key, value: e.target.value }
-                      })}
-                      onRemove={() => dispatch({ type: "REMOVE_HEADER", value: i })}
+                      key={field.id}
+                      keyProps={register(`headers.${idx}.name`)}
+                      valueProps={register(`headers.${idx}.value`)}
+                      onRemove={() => removeHeader(idx)}
                     />
                   ))
                 }
-                {config.headers.length === 0 && <Box textAlign="center" my="12" color="gray.600" fontWeight="600">No headers added</Box>}
+                {getValues('headers').length === 0 && <Box textAlign="center" my="12" color="gray.600" fontWeight="600">No headers added</Box>}
               </AccordionPanel>
             </AccordionItem>
           </Accordion>
@@ -433,7 +387,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
               <Box as="span" ml="auto" mr="1px" borderWidth="0 1px 1px 0" p="4px" borderColor="gray.400" display="inline-block" transform="rotate(-45deg)" />
 
               <MiddlewareCard ml="0" textOverflow="ellipsis" maxWidth="200px" whiteSpace="nowrap" overflowX="hidden">
-                🌏 {config.apiUrl}
+                🌏 {watch('apiUrl')}
               </MiddlewareCard>
             </Flex>
           </Flex>
@@ -453,24 +407,19 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                 Restricts access to the API route only to some specific domains or IP addresses.
               </HelpText>
             </FormLabel>
-            <Switch
-              colorScheme="green"
-              size="lg"
-              isChecked={!!config.restriction}
-              onChange={(e) => dispatch({ type: "SET_RESTRICTION_TYPE", value: e.target.checked ? Restriction.HTTP : null })}
-            />
+            <Switch colorScheme="green" size="lg" {...register('restriction.enabled')} />
           </FormControl>
           {isRestrictionsEnabled && (
             <Box width="95%" ml="auto">
               <FormControl display="flex" py="4" justifyContent="space-between" alignItems="center">
                 <FormLabel>Restriction type</FormLabel>
-                <RadioGroup value={config.restriction} onChange={(value) => dispatch({ type: "SET_RESTRICTION_TYPE", value })} experimental_spaceX="6" colorScheme="green">
-                  <Radio isRequired value="HTTP">Domains</Radio>
-                  <Radio isRequired value="IP">IP addresses</Radio>
+                <RadioGroup experimental_spaceX="6" colorScheme="green">
+                  <Radio isRequired value="HTTP" {...register('restriction.type')}>Domains</Radio>
+                  <Radio isRequired value="IP" {...register('restriction.type')}>IP addresses</Radio>
                 </RadioGroup>
               </FormControl>
               {
-                config.restriction === Restriction.IP && (
+                watch('restriction.type') === 'IP' && (
                   <FormControl display="flex" py="4" justifyContent="space-between" alignItems="center">
                     <FormLabel>
                       Whitelist IP addresses
@@ -483,14 +432,13 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                     <Input
                       width="50%"
                       placeholder="127.0.0.1, 127.0.0.1/24, 10.1.*.*"
-                      value={config.allowedIps}
-                      onChange={(e) => dispatch({ type: "SET_ALLOWED_IPS", value: e.target.value })}
+                      {...register('restriction.allowedIps')}
                     />
                   </FormControl>
                 )
               }
               {
-                config.restriction === Restriction.HTTP && (
+                watch('restriction.type') === 'HTTP' && (
                   <FormControl display="flex" py="4" justifyContent="space-between" alignItems="center">
                     <FormLabel>
                       Whitelist domains
@@ -503,8 +451,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                     <Input
                       width="50%"
                       placeholder="https://example.com, http://demo.example.com"
-                      value={config.allowedOrigins}
-                      onChange={(e) => dispatch({ type: "SET_ALLOWED_ORIGINS", value: e.target.value })}
+                      {...register('restriction.allowedOrigins')}
                     />
                   </FormControl>
                 )
@@ -519,12 +466,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                 Limits the number of calls every IP address can make within a time interval.
               </HelpText>
             </FormLabel>
-            <Switch
-              colorScheme="green"
-              size="lg"
-              isChecked={isRateLimitingEnabled}
-              onChange={(e) => dispatch({ type: e.target.checked ?  "ENABLE_RATE_LIMITING" : "DISABLE_RATE_LIMITING" })}
-            />
+            <Switch colorScheme="green" size="lg" {...register('rateLimiting.enabled')} />
           </FormControl>
           {
             isRateLimitingEnabled && (
@@ -532,21 +474,19 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                 <FormControl display="flex" py="4" justifyContent="space-between" alignItems="center">
                   <FormLabel>Max number of requests</FormLabel>
                   <Input
-                    width="20%"
                     type="number"
+                    width="20%"
                     required
-                    value={(config.rateLimiting as any).maxRequests}
-                    onChange={(e) => dispatch({ type: "SET_RATE_LIMITING_MAX_REQS", value: e.target.value })}
+                    {...register('rateLimiting.maxRequests')}
                   />
                 </FormControl>
                 <FormControl display="flex" py="4" justifyContent="space-between" alignItems="center">
                   <FormLabel>Window size(in seconds)</FormLabel>
                   <Input
-                    width="20%"
                     type="number"
+                    width="20%"
                     required
-                    value={(config.rateLimiting as any).windowSize}
-                    onChange={(e) => dispatch({ type: "SET_RATE_LIMITING_WINDOW", value: e.target.value })}
+                    {...register('rateLimiting.windowSize')}
                   />
                 </FormControl>
               </Box>
@@ -560,12 +500,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                 Caches the result from origin endpoint and returns it for further calls within a time interval.
               </HelpText>
             </FormLabel>
-            <Switch
-              colorScheme="green"
-              size="lg"
-              isChecked={isCachingEnabled}
-              onChange={(e) => dispatch({ type: e.target.checked ?  "ENABLE_CACHING" : "DISABLE_CACHING" })}
-            />
+            <Switch colorScheme="green" size="lg" {...register('caching.enabled')} />
           </FormControl>
           {
             isCachingEnabled && (
@@ -573,11 +508,10 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                 <FormControl display="flex" py="4" justifyContent="space-between" alignItems="center">
                   <FormLabel>Cache duration(in seconds)</FormLabel>
                   <Input
-                    width="20%"
                     type="number"
+                    width="20%"
                     required
-                    value={(config.caching as any).duration}
-                    onChange={(e) => dispatch({ type: "SET_CACHING_DURATION", value: e.target.value })}
+                    {...register('caching.duration')}
                   />
                 </FormControl>
               </Box>
@@ -595,7 +529,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
           bg="green.400"
           shadow="lg"
           rightIcon={<CheckIcon w="3" h="3" />}
-          isLoading={isUpdating}
+          isLoading={isSubmitting}
         >
           Save changes
         </Button>

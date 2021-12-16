@@ -1,16 +1,14 @@
-import { Flex, Input, IconButton } from '@chakra-ui/react';
+import { Flex, Input, IconButton, InputProps } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
-import { ChangeEventHandler, MouseEventHandler } from 'react';
+import { MouseEventHandler } from 'react';
 
 type Props = {
-  keyVal: string;
-  valueVal: string;
-  onKeyChange: ChangeEventHandler<HTMLInputElement>;
-  onValueChange: ChangeEventHandler<HTMLInputElement>;
+  keyProps: InputProps;
+  valueProps: InputProps;
   onRemove: MouseEventHandler<HTMLButtonElement>;
 };
 
-export default function QueryParamInput({ keyVal, valueVal, onKeyChange, onValueChange, onRemove }: Props) {
+export default function QueryParamInput({ keyProps, valueProps, onRemove }: Props) {
   return (
     <Flex
       alignItems="center"
@@ -27,14 +25,12 @@ export default function QueryParamInput({ keyVal, valueVal, onKeyChange, onValue
       <Input
         placeholder="Field name"
         required
-        value={keyVal}
-        onChange={onKeyChange}
+        {...keyProps}
       />
       <Input
         placeholder="Field value"
         mx="4"
-        value={valueVal}
-        onChange={onValueChange}
+        {...valueProps}
       />
       <IconButton
         icon={<DeleteIcon w={3} h={3} />}
