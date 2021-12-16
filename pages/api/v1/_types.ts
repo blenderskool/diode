@@ -1,18 +1,21 @@
-import { Prisma } from '@prisma/client';
+import { ApiRoute, Secret } from '@prisma/client';
+import { CachingOptions } from '../../../lib/middlewares/cache';
+import { RateLimitingOptions } from '../../../lib/middlewares/rate-limit';
+import { RestrictionOptions } from '../../../lib/middlewares/restriction';
 
 export type QueryParams = [string, string][];
 
 export type ExpandedHeaders = [string, string][];
 
-const ApiRouteWithProjectSecrets = Prisma.validator<Prisma.ApiRouteArgs>()({
-  include: {
-    project: {
-      select: {
-        id: true,
-        Secret: true
-      }
-    }
-  }
-});
+export type ApiRouteWithMiddlewares = Omit<ApiRoute, 'restriction' | 'rateLimiting' | 'caching'> & {
+  restriction: RestrictionOptions,
+  rateLimiting: RateLimitingOptions,
+  caching: CachingOptions,
+};
 
-export type ApiRouteWithProjectSecrets = Prisma.ApiRouteGetPayload<typeof ApiRouteWithProjectSecrets>;
+export type ApiRouteWithProjectSecrets = ApiRouteWithMiddlewares & {
+  project: {
+    id: string;
+    Secret: Secret[];
+  };
+};

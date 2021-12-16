@@ -1,4 +1,4 @@
-import { ApiMethod, ApiRoute } from '@prisma/client';
+import { ApiMethod } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import type { OutgoingHttpHeaders } from 'http';
 import getStream from 'get-stream';
@@ -6,8 +6,10 @@ import { Readable } from 'stream';
 
 import redis from '../redis';
 import { setAllHeaders } from '../internals/utils';
+import { ApiRouteWithMiddlewares } from '../../pages/api/v1/_types';
 
 export type CachingOptions = {
+  enabled: boolean;
   // Duration in seconds
   duration: number;
 };
@@ -17,11 +19,11 @@ export type CachingOptions = {
  * @param apiRoute ApiRoute object
  * @returns middleware function
  */
-export default function cache(apiRoute: ApiRoute) {
+export default function cache(apiRoute: ApiRouteWithMiddlewares) {
   return async (req: NextApiRequest, res: NextApiResponse, next) => {
     const cachingOpts = apiRoute.caching as CachingOptions;
     // Caching is only supported on GET requests
-    if (Object.keys(cachingOpts).length === 0 || apiRoute.method !== ApiMethod.GET) {
+    if (!cachingOpts.enabled || apiRoute.method !== ApiMethod.GET) {
       next();
       return;
     }

@@ -1,11 +1,20 @@
-import { ApiRoute, Restriction } from '@prisma/client';
 import { IpFilter } from 'express-ipfilter';
 import cors, { CorsOptions } from 'cors';
+import { ApiRouteWithMiddlewares } from '../../pages/api/v1/_types';
 
-function createCorsOptions(apiRoute: ApiRoute): CorsOptions {
+export type RestrictionOptions = {
+  enabled: boolean;
+  type: 'HTTP' | 'IP';
+  allowedOrigins: string[];
+  allowedIps: string[];
+};
+
+
+function createCorsOptions(apiRoute: ApiRouteWithMiddlewares): CorsOptions {
+  const { allowedOrigins } = apiRoute.restriction;
   return {
     origin(origin: string, callback: Function) {
-      if (apiRoute.allowedOrigins.indexOf(origin) !== -1) {
+      if (allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"), false);
@@ -20,14 +29,15 @@ function createCorsOptions(apiRoute: ApiRoute): CorsOptions {
  * @param apiRoute ApiRoute object
  * @returns middleware function
  */
-export default function middlewareRestriction(apiRoute: ApiRoute): Function {
+export default function restriction(apiRoute: ApiRouteWithMiddlewares): Function {
   // No API restriction
-  if (!apiRoute.restriction) return cors();
+  const options = apiRoute.restriction;
+  if (!options.enabled) return cors();
 
-  switch (apiRoute.restriction) {
-    case Restriction.IP:
-      return IpFilter(apiRoute.allowedIps, { mode: 'allow' });
-    case Restriction.HTTP:
+  switch (options.type) {
+    case 'IP':
+      return IpFilter(options.allowedIps, { mode: 'allow' });
+    case 'HTTP':
       return cors(createCorsOptions(apiRoute));
     default:
       throw new Error("Invalid restriction type");
