@@ -29,6 +29,17 @@ export default async function getApiRoute(req: NextApiRequest, res: NextApiRespo
 
     // Replace the request query with the remaining query params so that _path is not misused
     req.query = query;
+
+    /**
+     * Remove query params and headers if request data forwarding is disabled.
+     * No further middleware gets access to this data too.
+     */
+    if (!apiRoute.forwardRequestData) {
+      req.query = {};
+      req.headers = {};
+      req.rawHeaders = [];
+    }
+
     next({ apiRoute, path: remainingPath });
   } catch(err) {
     console.log(err);

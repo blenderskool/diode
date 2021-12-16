@@ -41,7 +41,7 @@ import prisma from '../../../../lib/prisma';
 import { RateLimitingOptions } from '../../../../lib/middlewares/rate-limit';
 import { CachingOptions } from '../../../../lib/middlewares/cache';
 import DangerZone from '../_danger-zone';
-import { ApiRouteWithMiddlewares, QueryParams } from '../../../api/v1/_types';
+import { ApiRouteWithMiddlewares, ExpandedHeaders, QueryParams } from '../../../api/v1/_types';
 import { RestrictionOptions } from '../../../../lib/middlewares/restriction';
 
 
@@ -66,6 +66,7 @@ const MiddlewareCard = ({ ...props }) => (
 type FormData = {
   method: string;
   apiUrl: string;
+  forwardRequestData: boolean;
   queryParams: { name: string, value: string }[];
   headers: { name: string, value: string }[];
 
@@ -130,8 +131,9 @@ export default function ApiRoutePage({ apiRoute }: Props) {
     defaultValues: {
       apiUrl: apiRoute.apiUrl,
       method: apiRoute.method,
-      queryParams: [],
-      headers: [],
+      forwardRequestData: apiRoute.forwardRequestData,
+      queryParams: (apiRoute.queryParams as QueryParams).map(([name, value]) => ({ name, value })) ?? [],
+      headers: (apiRoute.headers as ExpandedHeaders).map(([name, value]) => ({ name, value })) ?? [],
       restriction: {
         enabled: apiRoute.restriction.enabled ?? false,
         type: apiRoute.restriction.type ?? 'HTTP',
@@ -201,13 +203,12 @@ export default function ApiRoutePage({ apiRoute }: Props) {
   };
 
   const updateRoute = async (e) => {
-    e.preventDefault();
     try {
       const updatedApiRoute = getValues();
       await axios.post(`/api/routes/${apiRoute.id}`, {
         ...updatedApiRoute,
-        queryParams: updatedApiRoute.queryParams.map(header => [header.name, header.value]),
-        headers: updatedApiRoute.headers.map(header => [header.name, header.value]),
+        queryParams: updatedApiRoute.queryParams.map(({ name, value }) => [name, value]),
+        headers: updatedApiRoute.headers.map(({ name, value }) => [name, value]),
         restriction: {
           ...updatedApiRoute.restriction,
           allowedIps: updatedApiRoute.restriction.allowedIps.split(/,\s*/),
@@ -282,6 +283,18 @@ export default function ApiRoutePage({ apiRoute }: Props) {
               />
             </FormControl>
           </Flex>
+
+          <FormControl mt="8" display="flex" py="4" justifyContent="space-between" alignItems="center">
+            <FormLabel>
+              Request data forwarding
+              <HelpText mt="2">
+                Enabling this option allows query parameters and headers in the client request to be
+                <br />forwarded to the origin endpoint. Disabling this option would still pass the query
+                <br />parameters and headers configured below.
+              </HelpText>
+            </FormLabel>
+            <Switch colorScheme="green" size="lg" {...register('forwardRequestData')} />
+          </FormControl>          
 
           <Accordion mt="8" allowMultiple>
             <AccordionItem>
