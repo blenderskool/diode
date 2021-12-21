@@ -1,16 +1,15 @@
-import { ApiMethod, Project as ProjectType } from '@prisma/client';
-import { GetServerSideProps } from 'next';
+import type { ApiMethod, Project as ProjectType } from '@prisma/client';
+import type { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { Flex, Heading, Divider } from '@chakra-ui/react';
 import axios from 'axios';
 
-import ApiStats from '../../../components/ApiStats';
-import BackLink from '../../../components/BackLink';
+import { ApiStats, BackLink } from '@/components';
 import Apis from './_apis';
 import Secrets from './_secrets';
 import DangerZone from './_danger-zone';
-import prisma from '../../../lib/prisma';
+import prisma from '@/lib/prisma';
 
 type ProjectData = (ProjectType & {
   ApiRoute: {

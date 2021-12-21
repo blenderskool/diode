@@ -1,7 +1,7 @@
 import { Box, BoxProps, Input, InputProps } from '@chakra-ui/react';
 import { useContext, useRef } from 'react';
 import { useController } from 'react-hook-form';
-import ProjectSecrets from '../lib/contexts/ProjectSecrets';
+import ProjectSecrets from '@/lib/contexts/ProjectSecrets';
 
 export type SecretInputProps = {
   name: string;

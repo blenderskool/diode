@@ -1,6 +1,6 @@
 import { Box, Flex, Button } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
-import SectionHeading from '../../../components/SectionHeading';
+import { SectionHeading } from '@/components';
 import { useState } from 'react';
 
 export const getServerSideProps = () => ({ props: {} });

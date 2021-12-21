@@ -26,8 +26,8 @@ import { AddIcon } from '@chakra-ui/icons';
 import { Project } from '@prisma/client';
 import axios from 'axios';
 
-import prisma from '../../lib/prisma';
-import HelpText from '../../components/HelpText';
+import { HelpText } from '@/components';
+import prisma from '@/lib/prisma';
 
 type ProjectData = (Project & {
   _count: {

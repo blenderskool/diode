@@ -1,4 +1,4 @@
-import { GetServerSideProps } from 'next';
+import type { GetServerSideProps } from 'next';
 import {
   Flex,
   Button,
@@ -31,20 +31,23 @@ import axios from 'axios';
 import copy from 'copy-to-clipboard';
 import { useFieldArray, useForm } from 'react-hook-form';
 
-import SectionHeading from '../../../../components/SectionHeading';
-import HelpText from '../../../../components/HelpText';
-import ApiStats from '../../../../components/ApiStats';
-import BackLink from '../../../../components/BackLink';
-import QueryParamInput from '../../../../components/QueryParamInput';
+import {
+  SectionHeading,
+  HelpText,
+  ApiStats,
+  BackLink,
+  QueryParamInput,
+  SecretInput,
+} from '@/components';
+
 import Secrets from '../_secrets';
-import prisma from '../../../../lib/prisma';
-import { RateLimitingOptions } from '../../../../lib/middlewares/rate-limit';
-import { CachingOptions } from '../../../../lib/middlewares/cache';
 import DangerZone from '../_danger-zone';
-import { ApiRouteWithMiddlewares, ExpandedHeaders, QueryParams } from '../../../api/v1/_types';
-import { RestrictionOptions } from '../../../../lib/middlewares/restriction';
-import SecretInput from '../../../../components/SecretInput';
-import ProjectSecrets from '../../../../lib/contexts/ProjectSecrets';
+import prisma from '@/lib/prisma';
+import ProjectSecrets from '@/lib/contexts/ProjectSecrets';
+import type { RateLimitingOptions } from '@/lib/middlewares/rate-limit';
+import type { CachingOptions } from '@/lib/middlewares/cache';
+import type { ApiRouteWithMiddlewares, ExpandedHeaders, QueryParams } from '../../../api/v1/_types';
+import type { RestrictionOptions } from '@/lib/middlewares/restriction';
 
 
 const MiddlewareCard = ({ ...props }) => (

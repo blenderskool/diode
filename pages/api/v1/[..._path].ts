@@ -7,12 +7,12 @@ import { render } from 'micromustache';
 
 import type { ApiRouteWithProjectSecrets, QueryParams, ExpandedHeaders } from './_types';
 
-import getApiRoute from '../../../lib/internals/get-api-route';
-import { sendResponse } from '../../../lib/internals/send-response';
-import { addQueryParams, expandObjectEntries, mergeHeaders, movingAverage, substituteSecrets } from '../../../lib/internals/utils';
-import { middlewareCache, middlewareRatelimit, middlewareRestriction } from '../../../lib/middlewares';
-import prisma from '../../../lib/prisma';
-import { decryptSecret } from '../../../lib/internals/secrets';
+import getApiRoute from '@/lib/internals/get-api-route';
+import { sendResponse } from '@/lib/internals/send-response';
+import { addQueryParams, expandObjectEntries, mergeHeaders, movingAverage, substituteSecrets } from '@/lib/internals/utils';
+import { middlewareCache, middlewareRatelimit, middlewareRestriction } from '@/lib/middlewares';
+import prisma from '@/lib/prisma';
+import { decryptSecret } from '@/lib/internals/secrets';
 
 
 // This code is from Next.js API Routes Middleware docs

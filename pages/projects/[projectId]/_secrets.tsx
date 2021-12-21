@@ -1,11 +1,11 @@
+import type { Project } from '@prisma/client';
 import { Box, Flex, Text, Button, IconButton, Tooltip, Input, useToast } from '@chakra-ui/react';
 import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { Project } from '@prisma/client';
 import axios from 'axios';
 
-import SectionHeading from '../../../components/SectionHeading';
+import { SectionHeading } from '@/components';
 
 export const getServerSideProps = () => ({ props: {} });
 

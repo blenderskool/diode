@@ -29,9 +29,8 @@ import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 
-import SectionHeading from '../../../components/SectionHeading';
-import SecretInput from '../../../components/SecretInput';
-import ProjectSecrets from '../../../lib/contexts/ProjectSecrets';
+import { SectionHeading, SecretInput } from '@/components';
+import ProjectSecrets from '@/lib/contexts/ProjectSecrets';
 
 export const getServerSideProps = () => ({ props: {} });
 
