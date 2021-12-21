@@ -24,11 +24,14 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
-import { useReducer, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
+import { useForm } from 'react-hook-form';
 import axios from 'axios';
 
 import SectionHeading from '../../../components/SectionHeading';
+import SecretInput from '../../../components/SecretInput';
+import ProjectSecrets from '../../../lib/contexts/ProjectSecrets';
 
 export const getServerSideProps = () => ({ props: {} });
 
@@ -49,51 +52,32 @@ type Props = {
   [key: string]: any;
 };
 
-type NewApiState = {
+type NewApiFormData = {
   name: string;
-  method: string;
+  method: ApiMethod;
   apiUrl: string;
-  loading: boolean;
-  showCreationModal: boolean;
-};
-
-const newApiReducer = (state: NewApiState, action: { type: string, value: any }) => {
-  switch(action.type) {
-    case "SET_NAME":
-      return { ...state, name: action.value };
-    case "SET_METHOD":
-      return { ...state, method: action.value };
-    case "SET_APIURL":
-      return { ...state, apiUrl: action.value };
-    case "SET_LOADING":
-      return { ...state, loading: action.value };
-    case "SET_CREATION_MODAL":
-      return { ...state, showCreationModal: action.value };
-  }
 };
 
 export default function Apis({ project, ...props }: Props) {
-  const [state, dispatch] = useReducer(newApiReducer, {
-    name: '',
-    method: ApiMethod.GET,
-    apiUrl: '',
-    loading: false,
-    showCreationModal: false,
+  const { getValues, control, register, formState: { isSubmitting: isCreatingApi } } = useForm<NewApiFormData>({
+    defaultValues: {
+      name: '',
+      method: ApiMethod.GET,
+      apiUrl: '',
+    },
   });
+  const [showCreationModal, setShowCreationModal] = useState(false);
   const [deletingApi, setDeletingApi] = useState('');
   const router = useRouter();
   const toast = useToast();
 
   const createApi = async (e) => {
     e.preventDefault();
-    if (state.loading) return;
+    if (isCreatingApi) return;
 
     try {
-      dispatch({ type: "SET_LOADING", value: true });
       const response = await axios.post(`/api/routes/create`, {
-        name: state.name,
-        method: state.method,
-        apiUrl: state.apiUrl,
+        ...getValues(),
         projectId: project.id,
       });
       const newApiRouteId = response.data.id as string;
@@ -102,7 +86,7 @@ export default function Apis({ project, ...props }: Props) {
       console.log(err);
       toast({ status: "error", title: "Ah! An error occurred, maybe try again?" });
     } finally {
-      dispatch({ type: "SET_LOADING", value: false });
+      setShowCreationModal(false);
     }
   };
 
@@ -117,13 +101,13 @@ export default function Apis({ project, ...props }: Props) {
   };
 
   return (
-    <>
+    <ProjectSecrets.Provider value={project.Secret}>
       <Box {...props}>
         <Flex justifyContent="space-between">
           <SectionHeading heading="🔌 API routes">
             API endpoints that are configured with Diode.
           </SectionHeading>
-          <Button onClick={() => dispatch({ type: 'SET_CREATION_MODAL', value: true })} colorScheme="green" bg="green.400" rightIcon={<AddIcon w="3" h="3" />}>
+          <Button onClick={() => setShowCreationModal(true)} colorScheme="green" bg="green.400" rightIcon={<AddIcon w="3" h="3" />}>
             New API route
           </Button>
         </Flex>
@@ -169,7 +153,7 @@ export default function Apis({ project, ...props }: Props) {
         </Box>
       </Box>
 
-      <Modal size="lg" isOpen={state.showCreationModal} onClose={() => dispatch({ type: 'SET_CREATION_MODAL', value: false })}>
+      <Modal size="lg" isOpen={showCreationModal} onClose={() => setShowCreationModal(false)}>
         <ModalOverlay />
         <ModalContent p="2" pt="4">
           <ModalHeader>
@@ -180,42 +164,29 @@ export default function Apis({ project, ...props }: Props) {
             <ModalBody py={8}>
               <FormControl>
                 <FormLabel>API Name</FormLabel>
-                <Input
-                  value={state.name}
-                  placeholder="Notion API"
-                  required
-                  onChange={(e) => dispatch({ type: "SET_NAME", value: e.target.value })}
-                />
+                <Input placeholder="Notion API" required {...register("name")} />
               </FormControl>
               <Flex mt="8">
-                <FormControl width="150px">
+                <FormControl width="120px">
                   <FormLabel>Method</FormLabel>
-                  <Select
-                    value={state.method}
-                    onChange={(e) => dispatch({ type: "SET_METHOD", value: e.target.value })} 
-                    roundedRight="none"
-                    required
-                  >
+                  <Select roundedRight="none" required {...register("method")}>
                     {Object.keys(ApiMethod).map((method) => <option key={method} value={method}>{method}</option>)}
                   </Select>
                 </FormControl>
-                <FormControl>
+                <FormControl width="calc(100% - 120px)">
                   <FormLabel>Endpoint URL</FormLabel>
-                  <Input
-                    type="url"
-                    placeholder="https://api.example.com"
-                    ml="-1px"
-                    roundedLeft="none"
-                    required
-                    value={state.apiUrl}
-                    onChange={(e) => dispatch({ type: "SET_APIURL", value: e.target.value })}
+                  <SecretInput
+                    inputProps={{ type: "url", placeholder: "https://api.example.com", required: true }}
+                    containerProps={{ ml: "-1px", roundedLeft: "none" }}
+                    control={control}
+                    name="apiUrl"
                   />
                 </FormControl>
               </Flex>
             </ModalBody>
 
             <ModalFooter>
-              <Button type="submit" colorScheme="green" bg="green.400" width="full" isLoading={state.loading}>
+              <Button type="submit" colorScheme="green" bg="green.400" width="full" isLoading={isCreatingApi}>
                 Create &amp; configure API route ›
               </Button>
             </ModalFooter>
@@ -224,6 +195,6 @@ export default function Apis({ project, ...props }: Props) {
           <ModalCloseButton />
         </ModalContent>
       </Modal>
-    </>
+    </ProjectSecrets.Provider>
   );
 }

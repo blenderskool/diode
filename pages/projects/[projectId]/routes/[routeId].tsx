@@ -43,6 +43,8 @@ import { CachingOptions } from '../../../../lib/middlewares/cache';
 import DangerZone from '../_danger-zone';
 import { ApiRouteWithMiddlewares, ExpandedHeaders, QueryParams } from '../../../api/v1/_types';
 import { RestrictionOptions } from '../../../../lib/middlewares/restriction';
+import SecretInput from '../../../../components/SecretInput';
+import ProjectSecrets from '../../../../lib/contexts/ProjectSecrets';
 
 
 const MiddlewareCard = ({ ...props }) => (
@@ -83,7 +85,15 @@ const applyQueryParams = (apiUrl: string, query: QueryParams) => {
   const url = new URL(apiUrl);
   const searchParams = new URLSearchParams(query);
 
-  return decodeURI(url.origin + url.pathname) + (query.length ? '?' + searchParams : '');
+  /**
+   * Direct toString() is not used as it encodes the special characters
+   * making URL harder to read
+   */
+  const queryString = [...searchParams.entries()]
+    .map(([ key, value ]) => `${key}=${value}`)
+    .join("&");
+
+  return decodeURI(url.origin + url.pathname) + (queryString ? '?' + queryString : '');
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
@@ -129,7 +139,7 @@ type Props = {
 export default function ApiRoutePage({ apiRoute }: Props) {
   const { register, handleSubmit, getValues, watch, control, setValue, formState: { isSubmitting } } = useForm<FormData>({
     defaultValues: {
-      apiUrl: apiRoute.apiUrl,
+      apiUrl: applyQueryParams(apiRoute.apiUrl, apiRoute.queryParams as QueryParams),
       method: apiRoute.method,
       forwardRequestData: apiRoute.forwardRequestData,
       queryParams: (apiRoute.queryParams as QueryParams).map(([name, value]) => ({ name, value })) ?? [],
@@ -229,7 +239,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
   };
 
   return (
-    <>
+    <ProjectSecrets.Provider value={apiRoute.project.Secret}>
       <Head>
         <title>{apiRoute.name} | Diode 🔌</title>
       </Head>
@@ -271,15 +281,13 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                 {Object.keys(ApiMethod).map((method) => <option key={method} value={method}>{method}</option>)}
               </Select>
             </FormControl>
-            <FormControl>
+            <FormControl width="calc(100% - 150px)">
               <FormLabel>Endpoint URL</FormLabel>
-              <Input
-                type="url"
-                placeholder="https://api.example.com"
-                ml="-1px"
-                roundedLeft="none"
-                required
-                {...register('apiUrl')}
+              <SecretInput
+                name="apiUrl"
+                control={control}
+                inputProps={{ placeholder: 'https://api.example.com', type: 'url', required: true }}
+                containerProps={{ ml: '-1px', roundedLeft: 'none' }}
               />
             </FormControl>
           </Flex>
@@ -327,7 +335,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                     <QueryParamInput
                       key={field.id}
                       keyProps={register(`queryParams.${idx}.name`)}
-                      valueProps={register(`queryParams.${idx}.value`)}
+                      valueProps={{ name: `queryParams.${idx}.value`, control }}
                       onRemove={() => {
                         removeQueryParam(idx);
                         // Explicit call to watch handler because fieldarray events are not captured by react-hook-form
@@ -369,7 +377,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                     <QueryParamInput
                       key={field.id}
                       keyProps={register(`headers.${idx}.name`)}
-                      valueProps={register(`headers.${idx}.value`)}
+                      valueProps={{ name: `headers.${idx}.value`, control }}
                       onRemove={() => removeHeader(idx)}
                     />
                   ))
@@ -561,6 +569,6 @@ export default function ApiRoutePage({ apiRoute }: Props) {
         <br />
         This action is irreverisble.
       </DangerZone>
-    </>
+    </ProjectSecrets.Provider>
   );
 }

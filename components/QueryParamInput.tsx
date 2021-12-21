@@ -1,10 +1,11 @@
 import { Flex, Input, IconButton, InputProps } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
 import { MouseEventHandler } from 'react';
+import SecretInput, { SecretInputProps } from './SecretInput';
 
 type Props = {
   keyProps: InputProps;
-  valueProps: InputProps;
+  valueProps: SecretInputProps;
   onRemove: MouseEventHandler<HTMLButtonElement>;
 };
 
@@ -27,9 +28,9 @@ export default function QueryParamInput({ keyProps, valueProps, onRemove }: Prop
         required
         {...keyProps}
       />
-      <Input
-        placeholder="Field value"
-        mx="4"
+      <SecretInput
+        containerProps={{ mx: "4" }}
+        inputProps={{ placeholder: "Field value"  }}
         {...valueProps}
       />
       <IconButton
