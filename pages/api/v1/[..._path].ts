@@ -75,7 +75,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Request made
   try {
     const startTime = performance.now();
-    const isPartialQueryEnabled = !!apiRoute.partialQuery.enabled || requestUrl.searchParams.has('diode-filter');
+    const isPartialQueryEnabled = !!apiRoute.partialQuery.enabled && requestUrl.searchParams.has('diode-filter');
     const apiResponse = await axios.request({
       method: apiRoute.method,
       url: requestUrl.toString(),
@@ -95,6 +95,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     req.locals.result = apiResponse;
   
     if (isPartialQueryEnabled && apiResponse.headers['content-type'].includes('application/json')) {
+      /**
+       * get() is used instead of getAll() as only the filter configured
+       * either in dashboard or the incoming query param is used.
+       * Not both to avoid confusion
+       */
       await runMiddleware(req, res, middlewares.partialJsonQuery(requestUrl.searchParams.get('diode-filter')));
     }
 

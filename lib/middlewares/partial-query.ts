@@ -8,16 +8,22 @@ export interface PartialQueryOptions extends MiddlewareOptions {};
 export function partialJsonQuery(filterString: string) {
   return async (req: NextApiRequest, res: NextApiResponse, next: Function) => {
     const resultBuffer = await getStream.buffer(req.locals.result.data);
-    const resultData = mask(JSON.parse(resultBuffer as any), filterString);
+    // Below code is prone to errors if the body did not contain valid JSON data
+    try {
+      const resultData = mask(JSON.parse(resultBuffer as any), filterString);
 
-    const resultReadable = new Readable();
-    resultReadable.push(JSON.stringify(resultData));
-    resultReadable.push(null);
+      const resultReadable = new Readable();
+      resultReadable.push(JSON.stringify(resultData));
+      resultReadable.push(null);
 
-    req.locals.result = {
-      headers: { 'content-type': 'application/json' },
-      data: resultReadable,
-    };
-    next();
+      req.locals.result = {
+        headers: { 'content-type': 'application/json' },
+        data: resultReadable,
+      };
+    } catch(_) {
+      // Handle errors here if _necessary_ in the future
+    } finally {
+      next();
+    }
   };
 }
