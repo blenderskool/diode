@@ -97,8 +97,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Response preparation
       // TODO: Handle case when err.response is undefined
       console.log("Axios error", err);
-      sendResponse(res, err.response);
-      await prisma.$executeRaw`UPDATE "public"."ApiRoute" SET "fails" = "fails" + 1 WHERE "public"."ApiRoute"."id" = ${apiRoute.id}`;
+      if (err.response) {
+        sendResponse(res, err.response);
+      } else {
+        res.status(500).send("Error occurred");
+      }
+      
+      if (err.response || err.request) {
+        // API route failures are tracked only when axios errors are thrown
+        await prisma.$executeRaw`UPDATE "public"."ApiRoute" SET "fails" = "fails" + 1 WHERE "public"."ApiRoute"."id" = ${apiRoute.id}`;
+      }      
     } else {
       console.log("An error occurred!", err);
       res.status(500).send("Error occurred");
