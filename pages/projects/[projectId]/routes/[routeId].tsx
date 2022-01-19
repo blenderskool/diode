@@ -20,6 +20,7 @@ import {
   Radio,
   RadioGroup,
   Tag,
+  Link,
   useToast,
 } from '@chakra-ui/react';
 import { CheckIcon, CopyIcon } from '@chakra-ui/icons';
@@ -43,18 +44,16 @@ import {
 import Secrets from '../_secrets';
 import DangerZone from '../_danger-zone';
 import prisma from '@/lib/prisma';
+import { RateLimitingOptions, CachingOptions, RestrictionOptions, PartialQueryOptions } from '@/lib/middlewares';
+import { ApiRouteWithMiddlewares, ExpandedHeaders, QueryParams } from '../../../api/v1/_types';
 import ProjectSecrets from '@/lib/contexts/ProjectSecrets';
-import type { RateLimitingOptions } from '@/lib/middlewares/rate-limit';
-import type { CachingOptions } from '@/lib/middlewares/cache';
-import type { ApiRouteWithMiddlewares, ExpandedHeaders, QueryParams } from '../../../api/v1/_types';
-import type { RestrictionOptions } from '@/lib/middlewares/restriction';
-
 
 const MiddlewareCard = ({ ...props }) => (
-  <Box
+  <Flex
+    alignItems="center"
     ml="10"
     bg="white"
-    display="inline-block"
+    display="inline-flex"
     shadow="base"
     rounded="md"
     px="5"
@@ -82,6 +81,8 @@ type FormData = {
 
   rateLimiting: RateLimitingOptions;
   caching: CachingOptions;
+
+  partialQuery: PartialQueryOptions;
 };
 
 const applyQueryParams = (apiUrl: string, query: QueryParams) => {
@@ -162,6 +163,9 @@ export default function ApiRoutePage({ apiRoute }: Props) {
         enabled: apiRoute.caching.enabled ?? false,
         duration: apiRoute.caching.duration ?? 120,
       },
+      partialQuery: {
+        enabled: apiRoute.partialQuery.enabled ?? false,
+      },
     }
   });
   const { append: appendHeader, remove: removeHeader, fields: headerFields } = useFieldArray({
@@ -204,7 +208,17 @@ export default function ApiRoutePage({ apiRoute }: Props) {
     return watch(syncUrlAndQueryParams).unsubscribe;
   }, [watch, syncUrlAndQueryParams]);
 
-  const [isRestrictionsEnabled, isRateLimitingEnabled, isCachingEnabled] = watch(['restriction.enabled', 'rateLimiting.enabled', 'caching.enabled']);
+  const [
+    isRestrictionsEnabled,
+    isRateLimitingEnabled,
+    isCachingEnabled,
+    isPartialQueryEnabled,
+  ] = watch([
+    'restriction.enabled',
+    'rateLimiting.enabled',
+    'caching.enabled',
+    'partialQuery.enabled',
+  ]);
 
   const copyProxyUrl = () => {
     try {
@@ -262,9 +276,9 @@ export default function ApiRoutePage({ apiRoute }: Props) {
           <strong>No API keys are required</strong> and the request and response <strong>structure is same</strong> as that of the origin endpoint.
         </SectionHeading>
         <Flex mt="8" alignItems="center">
-          <Tag size="lg">{apiRoute.method}</Tag>
-          <Text fontWeight="600" ml="4">{proxyUrl}</Text>
-          <Button onClick={copyProxyUrl} size="sm" ml="auto" rightIcon={<CopyIcon />} colorScheme="green" bg="green.400">
+          <Tag size="lg" flexShrink={0}>{apiRoute.method}</Tag>
+          <Text fontWeight="600" mx="4" textOverflow="ellipsis" overflowX="hidden" whiteSpace="nowrap">{proxyUrl}</Text>
+          <Button onClick={copyProxyUrl} size="sm" ml="auto" rightIcon={<CopyIcon />} colorScheme="green" bg="green.400" flexShrink={0}>
             Copy URL
           </Button>
         </Flex>
@@ -285,7 +299,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
               </Select>
             </FormControl>
             <FormControl width="calc(100% - 150px)">
-              <FormLabel>Endpoint URL</FormLabel>
+              <FormLabel>Origin endpoint URL</FormLabel>
               <SecretInput
                 name="apiUrl"
                 control={control}
@@ -398,22 +412,39 @@ export default function ApiRoutePage({ apiRoute }: Props) {
           <SectionHeading heading="📡 Request flow">
             This flow shows all the middlewares applied on calls from receiving a request to returning a response.
           </SectionHeading>
-          <Flex position="relative" alignItems="center" mt="10">
-            {/* Request Line */}
-            <Box position="absolute" h="1px" bg="gray.300" width="100%" />
+          <Flex mt="10" alignItems="center">
+            <Flex flex="1" flexDirection="column" position="relative" mt="2">
+              <Flex alignItems="center">
+                {/* Request Line */}
+                <Box position="absolute" h="1px" bg="gray.300" width="100%" />
 
-            <Flex position="relative" zIndex="10" alignItems="center" width="100%">
-              {isRestrictionsEnabled && <MiddlewareCard>🚫 Restrictions</MiddlewareCard>}
-              {isRateLimitingEnabled && <MiddlewareCard>⏱️ Rate Limiting</MiddlewareCard>}
-              {isCachingEnabled && <MiddlewareCard>📌 Caching</MiddlewareCard>}
-              
-              {/* Arrow */}
-              <Box as="span" ml="auto" mr="1px" borderWidth="0 1px 1px 0" p="4px" borderColor="gray.400" display="inline-block" transform="rotate(-45deg)" />
+                <Flex position="relative" zIndex="10" alignItems="center" width="100%">
+                  {isRestrictionsEnabled && <MiddlewareCard>🚫 Restrictions</MiddlewareCard>}
+                  {isRateLimitingEnabled && <MiddlewareCard>⏱️ Rate Limiting</MiddlewareCard>}
+                  {isCachingEnabled && <MiddlewareCard>📌 Caching read</MiddlewareCard>}
+                  
+                  {/* Arrow */}
+                  <Box as="span" ml="auto" mr="1px" borderWidth="0 1px 1px 0" p="4px" borderColor="gray.400" display="inline-block" transform="rotate(-45deg)" />
+                </Flex>
+              </Flex>
 
-              <MiddlewareCard ml="0" textOverflow="ellipsis" maxWidth="200px" whiteSpace="nowrap" overflowX="hidden">
-                🌏 {watch('apiUrl')}
-              </MiddlewareCard>
+              <Flex alignItems="center" mt="4" mb="2">
+                {/* Response Line */}
+                <Box position="absolute" h="1px" bg="gray.300" width="100%" />
+
+                <Flex position="relative" zIndex="10" alignItems="center" width="100%">
+                  {/* Arrow */}
+                  <Box as="span" ml="1px" borderWidth="0 1px 1px 0" p="4px" borderColor="gray.400" display="inline-block" transform="rotate(135deg)" />
+                  {isCachingEnabled && <MiddlewareCard>📌 Caching write</MiddlewareCard>}
+                  {isPartialQueryEnabled && <MiddlewareCard>✂️ Partial Query</MiddlewareCard>}
+                  
+                </Flex>
+              </Flex>
             </Flex>
+
+            <MiddlewareCard ml="0" py="4" alignSelf="stretch">
+              🌏 Origin
+            </MiddlewareCard>
           </Flex>
         </Box>
 
@@ -423,10 +454,12 @@ export default function ApiRoutePage({ apiRoute }: Props) {
         <Box>
           <SectionHeading heading="📦 Middlewares">
             Middlewares allow you to add additional functionality before the request reaches the origin endpoint.
+            <br />
+            Use these only if origin endpoints don&apos;t provide these features already, as they may add processing time.
           </SectionHeading>
           <FormControl mt="8" display="flex" py="4" justifyContent="space-between" alignItems="center">
             <FormLabel>
-              🚫 Restrictions middleware
+              🚫 Restrictions
               <HelpText mt="2">
                 Restricts access to the API route only to some specific domains or IP addresses.
               </HelpText>
@@ -485,7 +518,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
 
           <FormControl mt="8" display="flex" py="4" justifyContent="space-between" alignItems="center">
             <FormLabel>
-              ⏱️ Rate Limiting middleware
+              ⏱️ Rate Limiting
               <HelpText mt="2">
                 Limits the number of calls every IP address can make within a time interval.
               </HelpText>
@@ -519,7 +552,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
 
           <FormControl mt="8" display="flex" py="4" justifyContent="space-between" alignItems="center">
             <FormLabel>
-              📌 Caching middleware
+              📌 Caching
               <HelpText mt="2">
                 Caches the result from origin endpoint and returns it for further calls within a time interval.
               </HelpText>
@@ -541,6 +574,22 @@ export default function ApiRoutePage({ apiRoute }: Props) {
               </Box>
             )
           }
+
+          <FormControl mt="8" display="flex" py="4" justifyContent="space-between" alignItems="center">
+            <FormLabel>
+              ✂️ Partial Query <Tag size="sm" colorScheme="orange" mt="0.5">Experimental</Tag>
+              <HelpText mt="2">
+                Query for only relevant fields in the JSON response, by passing <Code>diode-filter</Code> query param.
+              </HelpText>
+              <HelpText>
+                Note: This middleware consumes the origin API response and structure of response is not preserved.
+              </HelpText>
+              <HelpText>
+                <Link href="https://github.com/nemtsov/json-mask#syntax" color="green.500" isExternal>Syntax reference</Link>.
+              </HelpText>
+            </FormLabel>
+            <Switch colorScheme="green" size="lg" {...register('partialQuery.enabled')} />
+          </FormControl>
         </Box>
 
         {/* Save changes button */}

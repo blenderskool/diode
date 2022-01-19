@@ -48,6 +48,9 @@ model ApiRoute {
   successes     Int @default(0)
   fails         Int @default(0)
   avgResponseMs Int @default(0)
+
+  // Partial JSON query middleware config
+  partialQuery Json @default("{}")
 }
 
 model Secret {

@@ -75,16 +75,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Request made
   try {
     const startTime = performance.now();
+    const isPartialQueryEnabled = !!apiRoute.partialQuery.enabled || requestUrl.searchParams.has('diode-filter');
     const apiResponse = await axios.request({
       method: apiRoute.method,
       url: requestUrl.toString(),
       headers: requestHeaders,
 
       /**
-       * Get response as stream and prevent its decoding
-       * as proxy does not consume the result
+       * Get response as stream and decode it
+       * only if partial query middleware is enabled
        */
-      decompress: true,
+      decompress: isPartialQueryEnabled,
       responseType: 'stream',
 
       data: apiRoute.method === ApiMethod.GET ? undefined : req.body,
@@ -92,6 +93,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const timeTaken = performance.now() - startTime;
     
     req.locals.result = apiResponse;
+  
+    if (isPartialQueryEnabled && apiResponse.headers['content-type'].includes('application/json')) {
+      await runMiddleware(req, res, middlewares.partialJsonQuery(requestUrl.searchParams.get('diode-filter')));
+    }
 
     await runMiddleware(req, res, middlewares.cacheWrite(apiRoute));
     // Response preparation
