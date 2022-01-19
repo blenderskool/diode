@@ -395,8 +395,8 @@ export default function ApiRoutePage({ apiRoute }: Props) {
 
         {/* Request flow diagram */}
         <Box>
-          <SectionHeading heading="🧭 Request flow">
-            This flow shows all the middlewares applied on calls before a request gets made to the origin endpoint.
+          <SectionHeading heading="📡 Request flow">
+            This flow shows all the middlewares applied on calls from receiving a request to returning a response.
           </SectionHeading>
           <Flex position="relative" alignItems="center" mt="10">
             {/* Request Line */}
