@@ -1,5 +1,5 @@
 import { Box, Flex, Button } from '@chakra-ui/react';
-import { DeleteIcon } from '@chakra-ui/icons';
+import { TrashIcon } from '@heroicons/react/outline';
 import { SectionHeading } from '@/components';
 import { useState } from 'react';
 
@@ -36,7 +36,7 @@ export default function DangerZone({ onDelete, buttonText, children, ...props }:
           colorScheme="red"
           color="red.500"
           variant="outline"
-          rightIcon={<DeleteIcon w="3" h="3" />}
+          rightIcon={<TrashIcon width="16" />}
           onClick={deleteHandler}
           isLoading={deleting}
         >

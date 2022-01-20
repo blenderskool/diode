@@ -1,5 +1,5 @@
 import { Button } from '@chakra-ui/react';
-import { ArrowBackIcon } from '@chakra-ui/icons';
+import { ChevronLeftIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
 
 export default function BackLink(props) {
@@ -7,7 +7,7 @@ export default function BackLink(props) {
 
   return (
     <div>
-      <Button variant="link" leftIcon={<ArrowBackIcon />} onClick={router.back} {...props} />
+      <Button variant="link" leftIcon={<ChevronLeftIcon width="16" />} onClick={router.back} {...props} />
     </div>
   )
 }

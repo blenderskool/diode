@@ -1,6 +1,6 @@
 import type { Project } from '@prisma/client';
 import { Box, Flex, Text, Button, IconButton, Tooltip, Input, useToast } from '@chakra-ui/react';
-import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
+import { PlusIcon, TrashIcon } from '@heroicons/react/outline';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
@@ -69,7 +69,7 @@ export default function Secrets({ project, ...props }: Props) {
           <br />
           These are <strong>encrypted and stored</strong> on the database.
         </SectionHeading>
-        <Button colorScheme="green" bg="green.400" rightIcon={<AddIcon w="3" h="3" />} onClick={() => setShowNewForm(true)}>
+        <Button colorScheme="green" bg="green.400" rightIcon={<PlusIcon width="16" />} onClick={() => setShowNewForm(true)}>
           New secret
         </Button>
       </Flex>
@@ -94,8 +94,9 @@ export default function Secrets({ project, ...props }: Props) {
             </Tooltip>
             <Tooltip label="Remove this secret" fontSize="xs">
               <IconButton
-                icon={<DeleteIcon w={3} h={3} />}
+                icon={<TrashIcon width="16" />}
                 aria-label="Remove"
+                variant="ghost"
                 size="sm"
                 colorScheme="gray"
                 isLoading={deletingSecret === name}
