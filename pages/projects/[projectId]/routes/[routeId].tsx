@@ -19,10 +19,9 @@ import {
   AccordionIcon,
   Radio,
   RadioGroup,
-  Tag,
   useToast,
 } from '@chakra-ui/react';
-import { CheckIcon, CopyIcon } from '@chakra-ui/icons';
+import { CheckIcon, ClipboardCopyIcon } from '@heroicons/react/outline';
 import { ApiMethod, Project } from '@prisma/client';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
@@ -38,6 +37,7 @@ import {
   BackLink,
   QueryParamInput,
   SecretInput,
+  ApiMethodTag,
 } from '@/components';
 
 import Secrets from '../_secrets';
@@ -262,9 +262,9 @@ export default function ApiRoutePage({ apiRoute }: Props) {
           <strong>No API keys are required</strong> and the request and response <strong>structure is same</strong> as that of the origin endpoint.
         </SectionHeading>
         <Flex mt="8" alignItems="center">
-          <Tag size="lg">{apiRoute.method}</Tag>
+          <ApiMethodTag method={apiRoute.method} size="lg" />
           <Text fontWeight="600" ml="4">{proxyUrl}</Text>
-          <Button onClick={copyProxyUrl} size="sm" ml="auto" rightIcon={<CopyIcon />} colorScheme="green" bg="green.400">
+          <Button onClick={copyProxyUrl} size="sm" ml="auto" rightIcon={<ClipboardCopyIcon width="16" />} colorScheme="green" bg="green.400">
             Copy URL
           </Button>
         </Flex>
@@ -552,7 +552,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
           colorScheme="green"
           bg="green.400"
           shadow="lg"
-          rightIcon={<CheckIcon w="3" h="3" />}
+          rightIcon={<CheckIcon width="16" />}
           isLoading={isSubmitting}
         >
           Save changes
