@@ -5,13 +5,25 @@ type Props = TagProps & {
   method: ApiMethod;
 };
 
-const colors: Record<ApiMethod, string> = {
-  GET: "green",
-  POST: "yellow",
-  PUT: "blue",
-  DELETE: "red",
+const config: Record<ApiMethod, TagProps> = {
+  GET: {
+    children: "GET",
+    colorScheme: "green",
+  },
+  POST: {
+    children: "POST",
+    colorScheme: "yellow",
+  },
+  PUT: {
+    children: "PUT",
+    colorScheme: "blue",
+  },
+  DELETE: {
+    children: "DEL",
+    colorScheme: "red",
+  },
 };
 
 export default function ApiMethodTag({ method, ...props }: Props) {
-  return <Tag colorScheme={colors[method]} {...props}>{method}</Tag>;
+  return <Tag {...config[method]} {...props} />;
 }
