@@ -7,3 +7,4 @@ export { default as MockDeploymentBanner } from './MockDeploymentBanner';
 export { default as QueryParamInput } from './QueryParamInput';
 export { default as SecretInput } from './SecretInput';
 export { default as SectionHeading } from './SectionHeading';
+export { default as confirmDialog } from './ConfirmDialog';

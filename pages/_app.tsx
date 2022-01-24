@@ -5,18 +5,7 @@ import '@fontsource/inter/400.css';
 import '@fontsource/inter/500.css';
 
 import { Footer, MockDeploymentBanner } from '@/components';
-
-const theme = extendTheme({
-  config: {
-    initialColorMode: 'light',
-    useSystemColorMode: false,
-  },
-  fonts: {
-    heading: "Raleway",
-    body: "Inter",
-  },
-} as ThemeConfig);
-
+import theme from '@/lib/chakra-theme';
 
 const isMock = process.env.NEXT_PUBLIC_MOCK_DEPLOYMENT === "true";
 
