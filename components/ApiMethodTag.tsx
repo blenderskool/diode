@@ -25,5 +25,5 @@ const config: Record<ApiMethod, TagProps> = {
 };
 
 export default function ApiMethodTag({ method, ...props }: Props) {
-  return <Tag {...config[method]} {...props} />;
+  return <Tag flexShrink={0} {...config[method]} {...props} />;
 }
