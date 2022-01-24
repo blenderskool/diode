@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 
-import { SectionHeading } from '@/components';
+import { SectionHeading, confirmDialog } from '@/components';
 
 export const getServerSideProps = () => ({ props: {} });
 
@@ -54,11 +54,20 @@ export default function Secrets({ project, ...props }: Props) {
 
   const deleteSecret = async (secretName: string) => {
     if (deletingSecret) return;
-
     setDeletingSecret(secretName);
-    await axios.delete(`/api/projects/${project.id}/secrets/${secretName}`);
+
+    const confirmed = await confirmDialog({
+      title: `Delete ${secretName} secret`,
+      description: `Deleting this secret will make all the references to ${secretName} in request URL, headers, query params an empty string. This action is irreversible.`,
+      btnConfirmTxt: 'Delete Secret',
+    });
+
+    if (confirmed) {
+      await axios.delete(`/api/projects/${project.id}/secrets/${secretName}`);
+      router.replace(router.asPath, undefined, { scroll: false });
+    }
+
     setDeletingSecret('');
-    router.replace(router.asPath, undefined, { scroll: false });
   };
 
   return (

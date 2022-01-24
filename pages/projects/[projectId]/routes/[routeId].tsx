@@ -38,6 +38,7 @@ import {
   QueryParamInput,
   SecretInput,
   ApiMethodTag,
+  confirmDialog,
 } from '@/components';
 
 import Secrets from '../_secrets';
@@ -237,8 +238,16 @@ export default function ApiRoutePage({ apiRoute }: Props) {
   };
 
   const deleteRoute = async () => {
-    await axios.delete(`/api/routes/${apiRoute.id}`);
-    router.replace(`/projects/${apiRoute.project.id}`);
+    const confirmed = await confirmDialog({
+      title: `Delete ${apiRoute.name} API route`,
+      description: `Deleting this API route will remove all configurations and immediately make the proxy URL unusable. This action is irreversible.`,
+      btnConfirmTxt: 'Delete API route',
+    });
+
+    if (confirmed) {
+      await axios.delete(`/api/routes/${apiRoute.id}`);
+      router.replace(`/projects/${apiRoute.project.id}`);
+    }
   };
 
   return (
@@ -263,8 +272,18 @@ export default function ApiRoutePage({ apiRoute }: Props) {
         </SectionHeading>
         <Flex mt="8" alignItems="center">
           <ApiMethodTag method={apiRoute.method} size="lg" />
-          <Text fontWeight="600" ml="4">{proxyUrl}</Text>
-          <Button onClick={copyProxyUrl} size="sm" ml="auto" rightIcon={<ClipboardCopyIcon width="16" />} colorScheme="green" bg="green.400">
+          <Text fontWeight="600" mx="4" minWidth="0" textOverflow="ellipsis" overflowX="hidden" whiteSpace="nowrap">
+            {proxyUrl}
+          </Text>
+          <Button
+            onClick={copyProxyUrl}
+            size="sm"
+            ml="auto"
+            rightIcon={<ClipboardCopyIcon width="16" />}
+            colorScheme="green"
+            bg="green.400"
+            flexShrink={0}
+          >
             Copy URL
           </Button>
         </Flex>

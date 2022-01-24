@@ -33,7 +33,7 @@ import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 
-import { SectionHeading, SecretInput, ApiMethodTag } from '@/components';
+import { SectionHeading, SecretInput, ApiMethodTag, confirmDialog } from '@/components';
 import ProjectSecrets from '@/lib/contexts/ProjectSecrets';
 
 export const getServerSideProps = () => ({ props: {} });
@@ -134,14 +134,23 @@ export default function Apis({ project, ...props }: Props) {
     }
   };
 
-  const deleteApi = async (e, apiId: string) => {
+  const deleteApi = async (e, apiId: string, apiName: string) => {
     e.stopPropagation();
     if (deletingApi) return;
-
     setDeletingApi(apiId);
-    await axios.delete(`/api/routes/${apiId}`);
+    
+    const confirmed = await confirmDialog({
+      title: `Delete ${apiName} API route`,
+      description: `Deleting this API route will remove all configurations and immediately make its proxy URL unusable. This action is irreversible.`,
+      btnConfirmTxt: 'Delete API route',
+    });
+
+    if (confirmed) {
+      await axios.delete(`/api/routes/${apiId}`);
+      router.replace(router.asPath, undefined, { scroll: false });
+    }
+
     setDeletingApi('');
-    router.replace(router.asPath, undefined, { scroll: false });
   };
 
   const openDuplicateApiModal = async (e, api: ApiRoute) => {
@@ -189,13 +198,14 @@ export default function Apis({ project, ...props }: Props) {
                       variant="ghost"
                       size="sm"
                       ml="auto"
+                      isLoading={api.id === deletingApi}
                       onClick={e => e.stopPropagation()}
                     />
                     <MenuList minWidth="auto" fontSize="sm">
                       <MenuItem icon={<DuplicateIcon width="16" />} onClick={(e) => openDuplicateApiModal(e, api)}>
                         Duplicate
                       </MenuItem>
-                      <MenuItem disabled={api.id === deletingApi} icon={<TrashIcon width="16" />} color="red.500" onClick={(e) => deleteApi(e, api.id)}>
+                      <MenuItem icon={<TrashIcon width="16" />} color="red.500" onClick={(e) => deleteApi(e, api.id, api.name)}>
                         Delete
                       </MenuItem>
                     </MenuList>
