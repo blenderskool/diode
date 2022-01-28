@@ -19,11 +19,10 @@ import {
   AccordionIcon,
   Radio,
   RadioGroup,
-  Tag,
   Link,
   useToast,
 } from '@chakra-ui/react';
-import { CheckIcon, CopyIcon } from '@chakra-ui/icons';
+import { CheckIcon, ClipboardCopyIcon } from '@heroicons/react/outline';
 import { ApiMethod, Project } from '@prisma/client';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
@@ -39,6 +38,8 @@ import {
   BackLink,
   QueryParamInput,
   SecretInput,
+  ApiMethodTag,
+  confirmDialog,
 } from '@/components';
 
 import Secrets from '../_secrets';
@@ -251,8 +252,16 @@ export default function ApiRoutePage({ apiRoute }: Props) {
   };
 
   const deleteRoute = async () => {
-    await axios.delete(`/api/routes/${apiRoute.id}`);
-    router.replace(`/projects/${apiRoute.project.id}`);
+    const confirmed = await confirmDialog({
+      title: `Delete ${apiRoute.name} API route`,
+      description: `Deleting this API route will remove all configurations and immediately make the proxy URL unusable. This action is irreversible.`,
+      btnConfirmTxt: 'Delete API route',
+    });
+
+    if (confirmed) {
+      await axios.delete(`/api/routes/${apiRoute.id}`);
+      router.replace(`/projects/${apiRoute.project.id}`);
+    }
   };
 
   return (
@@ -276,9 +285,19 @@ export default function ApiRoutePage({ apiRoute }: Props) {
           <strong>No API keys are required</strong> and the request and response <strong>structure is same</strong> as that of the origin endpoint.
         </SectionHeading>
         <Flex mt="8" alignItems="center">
-          <Tag size="lg" flexShrink={0}>{apiRoute.method}</Tag>
-          <Text fontWeight="600" mx="4" textOverflow="ellipsis" overflowX="hidden" whiteSpace="nowrap">{proxyUrl}</Text>
-          <Button onClick={copyProxyUrl} size="sm" ml="auto" rightIcon={<CopyIcon />} colorScheme="green" bg="green.400" flexShrink={0}>
+          <ApiMethodTag method={apiRoute.method} size="lg" />
+          <Text fontWeight="600" mx="4" minWidth="0" textOverflow="ellipsis" overflowX="hidden" whiteSpace="nowrap">
+            {proxyUrl}
+          </Text>
+          <Button
+            onClick={copyProxyUrl}
+            size="sm"
+            ml="auto"
+            rightIcon={<ClipboardCopyIcon width="16" />}
+            colorScheme="green"
+            bg="green.400"
+            flexShrink={0}
+          >
             Copy URL
           </Button>
         </Flex>
@@ -577,7 +596,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
 
           <FormControl mt="8" display="flex" py="4" justifyContent="space-between" alignItems="center">
             <FormLabel>
-              ✂️ Partial Query <Tag size="sm" colorScheme="orange" mt="0.5">Experimental</Tag>
+              ✂️ Partial Query
               <HelpText mt="2">
                 Query for only relevant fields in the JSON response, by passing <Code>diode-filter</Code> query param.
               </HelpText>
@@ -601,7 +620,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
           colorScheme="green"
           bg="green.400"
           shadow="lg"
-          rightIcon={<CheckIcon w="3" h="3" />}
+          rightIcon={<CheckIcon width="16" />}
           isLoading={isSubmitting}
         >
           Save changes

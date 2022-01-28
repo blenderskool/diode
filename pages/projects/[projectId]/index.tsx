@@ -5,7 +5,7 @@ import Head from 'next/head';
 import { Flex, Heading, Divider } from '@chakra-ui/react';
 import axios from 'axios';
 
-import { ApiStats, BackLink } from '@/components';
+import { ApiStats, BackLink, confirmDialog } from '@/components';
 import Apis from './_apis';
 import Secrets from './_secrets';
 import DangerZone from './_danger-zone';
@@ -81,8 +81,16 @@ export default function Project({ project, stats }: Props) {
   const projectName = project.name + (!project.name.endsWith('project') ? ' project' : '');
 
   const deleteProject = async () => {
-    await axios.delete(`/api/projects/${project.id}`);
-    router.replace('/projects');
+    const confirmed = await confirmDialog({
+      title: `Delete ${projectName}`,
+      description: `Deleting this project will also delete all the API routes and Secrets in this project. This action is irreversible.`,
+      btnConfirmTxt: 'Delete project',
+    });
+
+    if (confirmed) {
+      await axios.delete(`/api/projects/${project.id}`);
+      router.replace('/projects');
+    }
   };
 
   return (

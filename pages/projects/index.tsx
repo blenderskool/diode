@@ -22,7 +22,7 @@ import {
   FormLabel,
   Input
 } from '@chakra-ui/react';
-import { AddIcon } from '@chakra-ui/icons';
+import { PlusIcon } from '@heroicons/react/outline';
 import { Project } from '@prisma/client';
 import axios from 'axios';
 
@@ -80,7 +80,7 @@ export default function Projects({ projects }: Props) {
       </Head>
       <Flex justifyContent="space-between">
         <Heading as="h1" size="lg" fontWeight="800">Projects</Heading>
-        <Button colorScheme="green" bg="green.400" rightIcon={<AddIcon w="3" h="3" />} onClick={() => setNewProjectOpen(true)}>
+        <Button colorScheme="green" bg="green.400" rightIcon={<PlusIcon width="16" />} onClick={() => setNewProjectOpen(true)}>
           New Project
         </Button>
       </Flex>

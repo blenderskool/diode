@@ -1,11 +1,23 @@
 import type { Project } from '@prisma/client';
-import { Box, Flex, Text, Button, IconButton, Tooltip, Input, useToast } from '@chakra-ui/react';
-import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
+import {
+  Box,
+  Flex,
+  Text,
+  Button,
+  IconButton,
+  Tooltip,
+  Input,
+  InputGroup,
+  InputRightElement,
+  useToast,
+} from '@chakra-ui/react';
+import { PlusIcon, TrashIcon } from '@heroicons/react/outline';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
+import { useForm } from 'react-hook-form';
 
-import { SectionHeading } from '@/components';
+import { SectionHeading, confirmDialog } from '@/components';
 
 export const getServerSideProps = () => ({ props: {} });
 
@@ -18,47 +30,62 @@ type Props = {
   [key: string]: any;
 };
 
+type NewSecretFormData = {
+  name: string;
+  value: string;
+};
+
 export default function Secrets({ project, ...props }: Props) {
   const [showNewForm, setShowNewForm] = useState(false);
-  const [newSecretName, setNewSecretName] = useState('');
-  const [newSecretValue, setNewSecretValue] = useState('');
-  const [creatingSecret, setCreatingSecret] = useState(false);
   const [deletingSecret, setDeletingSecret] = useState('');
+  const [showValue, setShowValue] = useState(false);
+  const {
+    register,
+    getValues,
+    handleSubmit,
+    setValue,
+    formState: { isSubmitting: creatingSecret },
+  } = useForm<NewSecretFormData>();
   const toast = useToast();
   const router = useRouter();
 
   const closeCreation = () => {
     setShowNewForm(false);
-    setNewSecretName('');
-    setNewSecretValue('');
+    setValue('name', '');
+    setValue('value', '');
   };
 
-  const createSecret = async (e) => {
-    e.preventDefault();
+  const createSecret = async () => {
     if (creatingSecret) return;
 
-    if (project.Secret.some(({ name }) => name === newSecretName)) {
+    const newSecret = getValues();
+
+    if (project.Secret.some(({ name }) => name === newSecret.name)) {
       toast({ status: "error", title: "Secret with this name already exists" });
       return;
     }
 
-    setCreatingSecret(true);
-    await axios.post(`/api/projects/${project.id}/secrets/create`, {
-      name: newSecretName,
-      value: newSecretValue,
-    });
-    setCreatingSecret(false);
+    await axios.post(`/api/projects/${project.id}/secrets/create`, newSecret);
     closeCreation();
     router.replace(router.asPath, undefined, { scroll: false });
   };
 
   const deleteSecret = async (secretName: string) => {
     if (deletingSecret) return;
-
     setDeletingSecret(secretName);
-    await axios.delete(`/api/projects/${project.id}/secrets/${secretName}`);
+
+    const confirmed = await confirmDialog({
+      title: `Delete ${secretName} secret`,
+      description: `Deleting this secret will make all the references to ${secretName} in request URL, headers, query params an empty string. This action is irreversible.`,
+      btnConfirmTxt: 'Delete Secret',
+    });
+
+    if (confirmed) {
+      await axios.delete(`/api/projects/${project.id}/secrets/${secretName}`);
+      router.replace(router.asPath, undefined, { scroll: false });
+    }
+
     setDeletingSecret('');
-    router.replace(router.asPath, undefined, { scroll: false });
   };
 
   return (
@@ -69,7 +96,7 @@ export default function Secrets({ project, ...props }: Props) {
           <br />
           These are <strong>encrypted and stored</strong> on the database.
         </SectionHeading>
-        <Button colorScheme="green" bg="green.400" rightIcon={<AddIcon w="3" h="3" />} onClick={() => setShowNewForm(true)}>
+        <Button colorScheme="green" bg="green.400" rightIcon={<PlusIcon width="16" />} onClick={() => setShowNewForm(true)}>
           New secret
         </Button>
       </Flex>
@@ -94,8 +121,9 @@ export default function Secrets({ project, ...props }: Props) {
             </Tooltip>
             <Tooltip label="Remove this secret" fontSize="xs">
               <IconButton
-                icon={<DeleteIcon w={3} h={3} />}
+                icon={<TrashIcon width="16" />}
                 aria-label="Remove"
+                variant="ghost"
                 size="sm"
                 colorScheme="gray"
                 isLoading={deletingSecret === name}
@@ -105,13 +133,33 @@ export default function Secrets({ project, ...props }: Props) {
           </Flex>
         ))}
         {showNewForm && (
-          <Flex border="1px" borderColor="gray.200" py="3" px="6" bg="white" _first={{ roundedTop: "md" }} _notFirst={{ mt: -1 }} _last={{ roundedBottom: "md" }}>
-            <form onSubmit={createSecret} style={{ width: '100%' }}>
+          <Flex border="1px" borderColor="gray.200" p="3" bg="white" _first={{ roundedTop: "md" }} _notFirst={{ mt: -1 }} _last={{ roundedBottom: "md" }}>
+            <form onSubmit={handleSubmit(createSecret)} style={{ width: '100%' }}>
               <Flex justifyContent="space-between" alignItems="center">
-                <Input placeholder="Secret name" required value={newSecretName} onChange={(e) => setNewSecretName(e.target.value)} />
-                <Input placeholder="Secret value" required value={newSecretValue} onChange={(e) => setNewSecretValue(e.target.value)} mx={8} />
+                <Input
+                  placeholder="Secret name"
+                  required
+                  borderRightRadius="none"
+                  borderRightWidth="0"
+                  {...register('name')}
+                />
+                <InputGroup>
+                  <Input
+                    type={showValue ? 'text' : 'password'}
+                    placeholder="Secret value"
+                    required
+                    pr="4rem"
+                    borderLeftRadius="none"
+                    {...register('value')}
+                  />
+                  <InputRightElement w="4rem">
+                    <Button size="xs" h="1.75rem" onClick={() => setShowValue(!showValue)}>
+                      {showValue ? 'Hide' : 'Show'}
+                    </Button>
+                  </InputRightElement>
+                </InputGroup>
 
-                <Button type="submit" size="sm" mr="2" px="6" colorScheme="green" bg="green.400" isLoading={creatingSecret}>
+                <Button type="submit" size="sm" ml="8" mr="2" px="6" colorScheme="green" bg="green.400" isLoading={creatingSecret}>
                   Save
                 </Button>
                 <Button type="button" size="sm" colorScheme="gray" px="6" onClick={closeCreation}>

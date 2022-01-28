@@ -1,5 +1,5 @@
 import { Flex, Input, IconButton, InputProps } from '@chakra-ui/react';
-import { DeleteIcon } from '@chakra-ui/icons';
+import { XIcon } from '@heroicons/react/outline';
 import { MouseEventHandler } from 'react';
 import SecretInput, { SecretInputProps } from './SecretInput';
 
@@ -15,9 +15,8 @@ export default function QueryParamInput({ keyProps, valueProps, onRemove }: Prop
       alignItems="center"
       justifyContent="space-between"
       border="1px"
-      borderColor="gray.200"
-      py="3"
-      px="6"
+      borderColor="gray.100"
+      p="3"
       bg="white"
       _first={{ roundedTop: "md" }}
       _notFirst={{ mt: -1 }}
@@ -26,18 +25,22 @@ export default function QueryParamInput({ keyProps, valueProps, onRemove }: Prop
       <Input
         placeholder="Field name"
         required
+        borderColor="gray.200"
+        borderRightRadius="none"
+        borderRightWidth="0"
         {...keyProps}
       />
       <SecretInput
-        containerProps={{ mx: "4" }}
+        containerProps={{ borderColor: "gray.200", borderLeftRadius: "none", mr: "3" }}
         inputProps={{ placeholder: "Field value"  }}
         {...valueProps}
       />
       <IconButton
-        icon={<DeleteIcon w={3} h={3} />}
+        icon={<XIcon width="16" />}
+        variant="ghost"
         aria-label="Remove"
         size="sm"
-        colorScheme="gray"
+        color="gray.500"
         onClick={onRemove}
       />
     </Flex>
