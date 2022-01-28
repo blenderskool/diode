@@ -10,7 +10,7 @@ import type { ApiRouteWithProjectSecrets, QueryParams, ExpandedHeaders } from '.
 import getApiRoute from '@/lib/internals/get-api-route';
 import { sendResponse } from '@/lib/internals/send-response';
 import { addQueryParams, expandObjectEntries, mergeHeaders, movingAverage, substituteSecrets } from '@/lib/internals/utils';
-import { middlewareCache, middlewareRatelimit, middlewareRestriction } from '@/lib/middlewares';
+import * as middlewares from '@/lib/middlewares';
 import prisma from '@/lib/prisma';
 import { decryptSecret } from '@/lib/internals/secrets';
 
@@ -39,6 +39,8 @@ function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function):
  * @param res 
  */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  req.locals = { result: null };
+
   // Get ApiRoute object from database
   const { apiRoute, path }: { apiRoute: ApiRouteWithProjectSecrets, path: string[] } = await runMiddleware(req, res, getApiRoute);
 
@@ -49,9 +51,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   // Middleware plugins
-  await runMiddleware(req, res, middlewareRestriction(apiRoute));
-  await runMiddleware(req, res, middlewareRatelimit(apiRoute));
-  await runMiddleware(req, res, middlewareCache(apiRoute));
+  await runMiddleware(req, res, middlewares.restriction(apiRoute));
+  await runMiddleware(req, res, middlewares.rateLimit(apiRoute));
+  await runMiddleware(req, res, middlewares.cacheRead(apiRoute));
 
   // Decrypt the project secrets
   const secrets = Object.fromEntries(apiRoute.project.Secret.map(({ name, secret }) => [name, decryptSecret(secret)]));
@@ -66,32 +68,47 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // Add request headers
   delete req.headers.host;
+  delete req.headers['accept-encoding'];
   const currentHeaders: ExpandedHeaders = expandObjectEntries(req.headers);
   const requestHeaders = mergeHeaders(substituteSecrets(apiRoute.headers as ExpandedHeaders, secrets), currentHeaders);
 
   // Request made
   try {
     const startTime = performance.now();
+    const isPartialQueryEnabled = !!apiRoute.partialQuery.enabled && requestUrl.searchParams.has('diode-filter');
     const apiResponse = await axios.request({
       method: apiRoute.method,
       url: requestUrl.toString(),
       headers: requestHeaders,
 
       /**
-       * Get response as stream and prevent its decoding
-       * as proxy does not consume the result
+       * Get response as stream and decode it
+       * only if partial query middleware is enabled
        */
-      decompress: false,
+      decompress: isPartialQueryEnabled,
       responseType: 'stream',
 
       data: apiRoute.method === ApiMethod.GET ? undefined : req.body,
     });
     const timeTaken = performance.now() - startTime;
-    const newAverage = movingAverage(apiRoute, timeTaken);
+    
+    req.locals.result = apiResponse;
+  
+    if (isPartialQueryEnabled && apiResponse.headers['content-type'].includes('application/json')) {
+      /**
+       * get() is used instead of getAll() as only the filter configured
+       * either in dashboard or the incoming query param is used.
+       * Not both to avoid confusion
+       */
+      await runMiddleware(req, res, middlewares.partialJsonQuery(requestUrl.searchParams.get('diode-filter')));
+    }
 
+    await runMiddleware(req, res, middlewares.cacheWrite(apiRoute));
     // Response preparation
-    sendResponse(res, apiResponse);
-    await prisma.$executeRaw`UPDATE "public"."ApiRoute" SET "successes" = "successes" + 1, "avgResponseMs" = ${newAverage} WHERE "public"."ApiRoute"."id" = ${apiRoute.id}`;
+    sendResponse(res, req.locals.result);
+
+    const newResponseAverage = movingAverage(apiRoute, timeTaken);
+    await prisma.$executeRaw`UPDATE "public"."ApiRoute" SET "successes" = "successes" + 1, "avgResponseMs" = ${newResponseAverage} WHERE "public"."ApiRoute"."id" = ${apiRoute.id}`;
   } catch(err) {
     if (axios.isAxiosError(err)) {
       // Response preparation

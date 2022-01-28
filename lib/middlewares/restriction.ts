@@ -2,13 +2,11 @@ import { IpFilter } from 'express-ipfilter';
 import cors, { CorsOptions } from 'cors';
 import { ApiRouteWithMiddlewares } from '../../pages/api/v1/_types';
 
-export type RestrictionOptions = {
-  enabled: boolean;
+export interface RestrictionOptions extends MiddlewareOptions {
   type: 'HTTP' | 'IP';
   allowedOrigins: string[];
   allowedIps: string[];
 };
-
 
 function createCorsOptions(apiRoute: ApiRouteWithMiddlewares): CorsOptions {
   const { allowedOrigins } = apiRoute.restriction;
@@ -29,7 +27,7 @@ function createCorsOptions(apiRoute: ApiRouteWithMiddlewares): CorsOptions {
  * @param apiRoute ApiRoute object
  * @returns middleware function
  */
-export default function restriction(apiRoute: ApiRouteWithMiddlewares): Function {
+export function restriction(apiRoute: ApiRouteWithMiddlewares): Function {
   // No API restriction
   const options = apiRoute.restriction;
   if (!options.enabled) return cors();

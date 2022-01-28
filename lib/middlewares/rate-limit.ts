@@ -4,8 +4,7 @@ import { ApiRouteWithMiddlewares } from '../../pages/api/v1/_types';
 
 import redis from '../redis';
 
-export type RateLimitingOptions = {
-  enabled: boolean;
+export interface RateLimitingOptions extends MiddlewareOptions {
   windowSize: number,
   maxRequests: number,
 };
@@ -15,7 +14,7 @@ export type RateLimitingOptions = {
  * @param apiRoute ApiRoute object
  * @returns middleware function
  */
-export default function rateLimit(apiRoute: ApiRouteWithMiddlewares) {
+export function rateLimit(apiRoute: ApiRouteWithMiddlewares) {
   return async (req: NextApiRequest, res: NextApiResponse, next) => {
     const rateLimiting = apiRoute.rateLimiting as RateLimitingOptions;
     if (!rateLimiting.enabled) {

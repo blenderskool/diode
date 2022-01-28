@@ -105,6 +105,7 @@ export default function SecretInput({ name, control, containerProps = {}, inputP
         }}
         autoComplete="off"
         spellCheck="false"
+        required={required}
         onPaste={syncScroll}
         onCut={syncScroll}
         onFocus={syncScroll}
