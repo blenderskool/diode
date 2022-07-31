@@ -1,8 +1,6 @@
 import { ApiMethod } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import type { OutgoingHttpHeaders } from 'http';
-import getStream from 'get-stream';
-import { Readable } from 'stream';
 
 import redis from '../redis';
 import { setAllHeaders } from '../internals/utils';
@@ -67,7 +65,7 @@ export function cacheWrite(apiRoute: ApiRouteWithMiddlewares) {
     const { duration } = cachingOpts;
 
     const headers = JSON.stringify(req.locals.result.headers);
-    const buffer = await getStream.buffer(req.locals.result.data);
+    const buffer = req.locals.result.data;
     // TODO: Handle errors from below commands
     await redis
       .pipeline()
@@ -77,16 +75,12 @@ export function cacheWrite(apiRoute: ApiRouteWithMiddlewares) {
 
     console.log("Cache middleware: Added to cache");
 
-    const resultReadable = new Readable();
-    resultReadable.push(buffer);
-    resultReadable.push(null);
-
     req.locals.result = {
       headers: {
         ...req.locals.result.headers,
         'cache-control': `max-age=${Math.max(0, duration)}`,
       },
-      data: resultReadable,
+      data: buffer,
     };
     next();
   }
