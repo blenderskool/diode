@@ -4,7 +4,7 @@ import type { Stream } from 'stream';
 declare global {
   interface ResultResponse {
     headers: Record<string, string>,
-    data: Stream,
+    data: Buffer,
     [key: string]: any,
   }
 
@@ -17,6 +17,7 @@ declare module 'next' {
   interface NextApiRequest extends Req {
     locals: {
       result: ResultResponse,
+      url?: string,
     },
   }
 }
