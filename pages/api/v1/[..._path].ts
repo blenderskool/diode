@@ -61,7 +61,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const apiUrl = encodeURI(render(decodeURI(apiRoute.apiUrl), secrets));
 
   // Request preparation
-  const requestUrl = new URL(req.locals.url ?? `${apiUrl}/${path.join('/')}`);
+  let restPath = path.join('/');
+  restPath = restPath ? `/${restPath}` : '';
+  const requestUrl = new URL(req.locals.url ?? `${apiUrl}${restPath}`);
   const currentQueryParams: QueryParams = expandObjectEntries(req.query);
 
   if (!req.locals.url) {
