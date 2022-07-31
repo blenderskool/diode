@@ -20,6 +20,7 @@ import {
   Radio,
   RadioGroup,
   Link,
+  Tag,
   useToast,
 } from '@chakra-ui/react';
 import { CheckIcon, ClipboardCopyIcon } from '@heroicons/react/outline';
@@ -45,7 +46,7 @@ import {
 import Secrets from '../_secrets';
 import DangerZone from '../_danger-zone';
 import prisma from '@/lib/prisma';
-import { RateLimitingOptions, CachingOptions, RestrictionOptions, PartialQueryOptions } from '@/lib/middlewares';
+import { RateLimitingOptions, CachingOptions, RestrictionOptions, PartialQueryOptions, ImageTransformationOptions } from '@/lib/middlewares';
 import { ApiRouteWithMiddlewares, ExpandedHeaders, QueryParams } from '../../../api/v1/_types';
 import ProjectSecrets from '@/lib/contexts/ProjectSecrets';
 
@@ -82,8 +83,8 @@ type FormData = {
 
   rateLimiting: RateLimitingOptions;
   caching: CachingOptions;
-
   partialQuery: PartialQueryOptions;
+  imageTransformation: ImageTransformationOptions;
 };
 
 const applyQueryParams = (apiUrl: string, query: QueryParams) => {
@@ -167,6 +168,9 @@ export default function ApiRoutePage({ apiRoute }: Props) {
       partialQuery: {
         enabled: apiRoute.partialQuery.enabled ?? false,
       },
+      imageTransformation: {
+        enabled: apiRoute.imageTransformation.enabled ?? false,
+      }
     }
   });
   const { append: appendHeader, remove: removeHeader, fields: headerFields } = useFieldArray({
@@ -214,11 +218,13 @@ export default function ApiRoutePage({ apiRoute }: Props) {
     isRateLimitingEnabled,
     isCachingEnabled,
     isPartialQueryEnabled,
+    isImageTransformationEnabled,
   ] = watch([
     'restriction.enabled',
     'rateLimiting.enabled',
     'caching.enabled',
     'partialQuery.enabled',
+    'imageTransformation.enabled',
   ]);
 
   const copyProxyUrl = () => {
@@ -456,7 +462,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                   <Box as="span" ml="1px" borderWidth="0 1px 1px 0" p="4px" borderColor="gray.400" display="inline-block" transform="rotate(135deg)" />
                   {isCachingEnabled && <MiddlewareCard>📌 Caching write</MiddlewareCard>}
                   {isPartialQueryEnabled && <MiddlewareCard>✂️ Partial Query</MiddlewareCard>}
-                  
+                  {isImageTransformationEnabled && <MiddlewareCard>📷 Image transformation</MiddlewareCard>}
                 </Flex>
               </Flex>
             </Flex>
@@ -608,6 +614,19 @@ export default function ApiRoutePage({ apiRoute }: Props) {
               </HelpText>
             </FormLabel>
             <Switch colorScheme="green" size="lg" {...register('partialQuery.enabled')} />
+          </FormControl>
+
+          <FormControl mt="8" display="flex" py="4" justifyContent="space-between" alignItems="center">
+            <FormLabel>
+              📷 Image Transformation <Tag size="sm" colorScheme="orange" mt="0.5">Experimental</Tag>
+              <HelpText mt="2">
+                On-demand image transformation using query parameters.
+              </HelpText>
+              <HelpText>
+                Note: This middleware consumes the origin API response and structure of response is not preserved.
+              </HelpText>
+            </FormLabel>
+            <Switch colorScheme="green" size="lg" {...register('imageTransformation.enabled')} />
           </FormControl>
         </Box>
 

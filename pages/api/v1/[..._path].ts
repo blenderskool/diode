@@ -54,17 +54,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await runMiddleware(req, res, middlewares.restriction(apiRoute));
   await runMiddleware(req, res, middlewares.rateLimit(apiRoute));
   await runMiddleware(req, res, middlewares.cacheRead(apiRoute));
+  await runMiddleware(req, res, middlewares.imageTransformationReader(apiRoute));
 
   // Decrypt the project secrets
   const secrets = Object.fromEntries(apiRoute.project.Secret.map(({ name, secret }) => [name, decryptSecret(secret)]));
   const apiUrl = encodeURI(render(decodeURI(apiRoute.apiUrl), secrets));
 
   // Request preparation
-  const requestUrl = new URL(`${apiUrl}/${path.join('/')}`);
+  const requestUrl = new URL(req.locals.url ?? `${apiUrl}/${path.join('/')}`);
   const currentQueryParams: QueryParams = expandObjectEntries(req.query);
-  // Add query params
-  addQueryParams(requestUrl, substituteSecrets(apiRoute.queryParams as QueryParams, secrets));
-  addQueryParams(requestUrl, currentQueryParams);
+
+  if (!req.locals.url) {
+    // Add query params
+    addQueryParams(requestUrl, substituteSecrets(apiRoute.queryParams as QueryParams, secrets));
+    addQueryParams(requestUrl, currentQueryParams);
+  }
 
   // Add request headers
   delete req.headers.host;
@@ -80,13 +84,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       method: apiRoute.method,
       url: requestUrl.toString(),
       headers: requestHeaders,
-
-      /**
-       * Get response as stream and decode it
-       * only if partial query middleware is enabled
-       */
       decompress: isPartialQueryEnabled,
-      responseType: 'stream',
+      responseType: 'arraybuffer',
 
       data: apiRoute.method === ApiMethod.GET ? undefined : req.body,
     });
@@ -103,6 +102,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await runMiddleware(req, res, middlewares.partialJsonQuery(requestUrl.searchParams.get('diode-filter')));
     }
 
+    await runMiddleware(req, res, middlewares.imageTransformation(apiRoute));
     await runMiddleware(req, res, middlewares.cacheWrite(apiRoute));
     // Response preparation
     sendResponse(res, req.locals.result);

@@ -44,13 +44,16 @@ model ApiRoute {
   // Caching middleware config
   caching Json @default("{}")
 
+  // Partial JSON query middleware config
+  partialQuery Json @default("{}")
+
+  // Image Transformation middleware config
+  imageTransformation Json @default("{}")
+
   // Analytics
   successes     Int @default(0)
   fails         Int @default(0)
   avgResponseMs Int @default(0)
-
-  // Partial JSON query middleware config
-  partialQuery Json @default("{}")
 }
 
 model Secret {
