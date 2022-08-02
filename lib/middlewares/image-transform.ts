@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import sharp, { FitEnum, FormatEnum } from 'sharp';
+import { getType } from 'mime';
 
 import { ApiRouteWithMiddlewares } from 'pages/api/v1/_types';
 
@@ -13,6 +14,10 @@ const getValue = <T = string>(query: string | string[], parse: (val: string) => 
     return query ? parse(query) : defaultVal;
   }
 }
+
+const remap = (value: number, inMin: number, inMax: number, outMin: number, outMax: number) => 
+  (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+
 
 export const imageTransformationReader = (apiRoute: ApiRouteWithMiddlewares) => (req: NextApiRequest, res: NextApiResponse, next) => {
   const imageTransformation = apiRoute.imageTransformation as ImageTransformationOptions;
@@ -40,6 +45,11 @@ export function imageTransformation(apiRoute: ApiRouteWithMiddlewares) {
     const quality = getValue(req.query.q, parseInt);
     const colors = getValue(req.query.colorquant, parseInt);
     const crop = getValue(req.query.crop, (s) => sharp.strategy[s], 'center');
+    const blur = getValue(req.query.blur, parseInt, 0);
+    const saturation = remap(getValue(req.query.sat, parseInt, 0), -100, 100, 0, 2);
+    const brightness = remap(getValue(req.query.bright, parseInt, 0), -100, 100, 0, 2);
+    const contrast = remap(getValue(req.query.cont, parseInt, 0), -100, 100, 0, 2);
+    const progressive = getValue(req.query.prog, Boolean, false);
 
     const image = req.locals.result.data;
 
@@ -50,9 +60,16 @@ export function imageTransformation(apiRoute: ApiRouteWithMiddlewares) {
         fit,
         position: crop,
       })
+      .blur(blur === 0 ? false : 1 + blur / 2)
+      .modulate({
+        brightness: brightness,
+        saturation: saturation,
+      })
+      .linear(contrast, -(128 * contrast) + 128)
       .toFormat(format, {
         quality,
         colors,
+        progressive,
       })
       .toBuffer();
 
@@ -60,7 +77,7 @@ export function imageTransformation(apiRoute: ApiRouteWithMiddlewares) {
       data: output,
       headers: {
         ...req.locals.result.headers,
-        'Content-Type': `image/${format}`
+        'Content-Type': getType(format),
       }
     };
     next();
