@@ -60,8 +60,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const apiUrl = encodeURI(render(decodeURI(apiRoute.apiUrl), secrets));
 
   // Request preparation
-  const requestUrl = new URL(`${apiUrl}/${path.join('/')}`);
+  let restPath = path.join('/');
+  if (!apiUrl.endsWith('/')) {
+    restPath = '/' + restPath;
+  }
+
+  const requestUrl = new URL(`${apiUrl}${restPath}`);
   const currentQueryParams: QueryParams = expandObjectEntries(req.query);
+
   // Add query params
   addQueryParams(requestUrl, substituteSecrets(apiRoute.queryParams as QueryParams, secrets));
   addQueryParams(requestUrl, currentQueryParams);
@@ -80,13 +86,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       method: apiRoute.method,
       url: requestUrl.toString(),
       headers: requestHeaders,
-
-      /**
-       * Get response as stream and decode it
-       * only if partial query middleware is enabled
-       */
       decompress: isPartialQueryEnabled,
-      responseType: 'stream',
+      responseType: 'arraybuffer',
 
       data: apiRoute.method === ApiMethod.GET ? undefined : req.body,
     });
@@ -103,6 +104,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await runMiddleware(req, res, middlewares.partialJsonQuery(requestUrl.searchParams.get('diode-filter')));
     }
 
+    await runMiddleware(req, res, middlewares.imageTransformation(apiRoute, requestUrl.searchParams));
     await runMiddleware(req, res, middlewares.cacheWrite(apiRoute));
     // Response preparation
     sendResponse(res, req.locals.result);

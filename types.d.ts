@@ -4,7 +4,7 @@ import type { Stream } from 'stream';
 declare global {
   interface ResultResponse {
     headers: Record<string, string>,
-    data: Stream,
+    data: Buffer,
     [key: string]: any,
   }
 
