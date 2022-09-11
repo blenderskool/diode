@@ -54,7 +54,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await runMiddleware(req, res, middlewares.restriction(apiRoute));
   await runMiddleware(req, res, middlewares.rateLimit(apiRoute));
   await runMiddleware(req, res, middlewares.cacheRead(apiRoute));
-  await runMiddleware(req, res, middlewares.imageTransformationReader(apiRoute));
 
   // Decrypt the project secrets
   const secrets = Object.fromEntries(apiRoute.project.Secret.map(({ name, secret }) => [name, decryptSecret(secret)]));
@@ -62,15 +61,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // Request preparation
   let restPath = path.join('/');
-  restPath = restPath ? `/${restPath}` : '';
-  const requestUrl = new URL(req.locals.url ?? `${apiUrl}${restPath}`);
+  if (!apiUrl.endsWith('/')) {
+    restPath = '/' + restPath;
+  }
+
+  const requestUrl = new URL(`${apiUrl}${restPath}`);
   const currentQueryParams: QueryParams = expandObjectEntries(req.query);
 
-  if (!req.locals.url) {
-    // Add query params
-    addQueryParams(requestUrl, substituteSecrets(apiRoute.queryParams as QueryParams, secrets));
-    addQueryParams(requestUrl, currentQueryParams);
-  }
+  // Add query params
+  addQueryParams(requestUrl, substituteSecrets(apiRoute.queryParams as QueryParams, secrets));
+  addQueryParams(requestUrl, currentQueryParams);
 
   // Add request headers
   delete req.headers.host;
@@ -104,7 +104,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await runMiddleware(req, res, middlewares.partialJsonQuery(requestUrl.searchParams.get('diode-filter')));
     }
 
-    await runMiddleware(req, res, middlewares.imageTransformation(apiRoute));
+    await runMiddleware(req, res, middlewares.imageTransformation(apiRoute, requestUrl.searchParams));
     await runMiddleware(req, res, middlewares.cacheWrite(apiRoute));
     // Response preparation
     sendResponse(res, req.locals.result);

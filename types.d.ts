@@ -17,7 +17,6 @@ declare module 'next' {
   interface NextApiRequest extends Req {
     locals: {
       result: ResultResponse,
-      url?: string,
     },
   }
 }

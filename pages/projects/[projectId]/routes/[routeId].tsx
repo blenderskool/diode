@@ -462,7 +462,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                   <Box as="span" ml="1px" borderWidth="0 1px 1px 0" p="4px" borderColor="gray.400" display="inline-block" transform="rotate(135deg)" />
                   {isCachingEnabled && <MiddlewareCard>📌 Caching write</MiddlewareCard>}
                   {isPartialQueryEnabled && <MiddlewareCard>✂️ Partial Query</MiddlewareCard>}
-                  {isImageTransformationEnabled && <MiddlewareCard>📷 Image transformation</MiddlewareCard>}
+                  {isImageTransformationEnabled && <MiddlewareCard>📷 Image Transformation</MiddlewareCard>}
                 </Flex>
               </Flex>
             </Flex>
