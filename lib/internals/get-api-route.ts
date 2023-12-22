@@ -12,7 +12,7 @@ export default async function getApiRoute(req: NextApiRequest, res: NextApiRespo
   const [apiId, ...remainingPath] = _path;
   try {
     // Fetch the API route details from DB (including project id and secret data)
-    const apiRoute = await prisma.apiRoute.findUnique({
+    const apiRoute = await prisma.apiRoute.findUniqueOrThrow({
       where: {
         id: apiId,
       },
@@ -24,7 +24,6 @@ export default async function getApiRoute(req: NextApiRequest, res: NextApiRespo
           },
         },
       },
-      rejectOnNotFound: true,
     });
 
     // Replace the request query with the remaining query params so that _path is not misused

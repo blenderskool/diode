@@ -39,7 +39,7 @@ export function cacheRead(apiRoute: ApiRouteWithMiddlewares) {
       .get(`${key}:headers`)
       .ttl(`${key}:headers`)
       .getBuffer(`${key}:response`)
-      .exec();
+      .exec() as [[Error, string], [Error, number], [Error, Buffer]];
 
     if (!cachedHeadersError && !cacheAgeError && !cachedResultError && cachedHeaders) {
       console.log("Cache middleware: HIT!");
