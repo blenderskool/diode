@@ -89,6 +89,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       responseType: 'stream',
 
       data: apiRoute.method === ApiMethod.GET ? undefined : req.body,
+      validateStatus: (status) => status < 400
     });
     const timeTaken = performance.now() - startTime;
     
