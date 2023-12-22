@@ -18,7 +18,7 @@
     "@fontsource/raleway": "^4.5.0",
     "@heroicons/react": "^1.0.5",
     "@prisma/client": "^3.4.2",
-    "axios": "^1.6.2",
+    "axios": "^0.24.0",
     "copy-to-clipboard": "^3.3.1",
     "cors": "^2.8.5",
     "express-ipfilter": "^1.2.0",
