@@ -34,8 +34,6 @@ import axios from 'axios';
 import { SectionHeading, SecretInput, ApiMethodTag, confirmDialog } from '@/components/ui';
 import ProjectSecrets from '@/lib/contexts/ProjectSecrets';
 
-export const getServerSideProps = () => ({ props: {} });
-
 type ApiRoute = {
   id: string;
   name: string;

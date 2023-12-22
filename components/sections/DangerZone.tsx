@@ -3,8 +3,6 @@ import { TrashIcon } from '@heroicons/react/outline';
 import { SectionHeading } from '@/components/ui';
 import { useState } from 'react';
 
-export const getServerSideProps = () => ({ props: {} });
-
 type Props = {
   onDelete: Function;
   buttonText: string;

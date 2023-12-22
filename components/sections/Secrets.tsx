@@ -19,8 +19,6 @@ import { useForm } from 'react-hook-form';
 
 import { SectionHeading, confirmDialog } from '@/components/ui';
 
-export const getServerSideProps = () => ({ props: {} });
-
 type Props = {
   project: (Project & {
     Secret: {
