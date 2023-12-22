@@ -6,7 +6,7 @@ import { Readable } from 'stream';
 
 import redis from '../redis';
 import { setAllHeaders } from '../internals/utils';
-import { ApiRouteWithMiddlewares } from '../../pages/api/v1/_types';
+import { ApiRouteWithMiddlewares } from '../../pages/api/v1/types';
 
 export interface CachingOptions extends MiddlewareOptions {
   // Duration in seconds

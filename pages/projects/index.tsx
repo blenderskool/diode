@@ -1,32 +1,32 @@
-import { useState } from 'react';
-import { GetServerSideProps } from 'next';
-import Head from 'next/head';
-import NextLink from 'next/link';
-import { useRouter } from 'next/router';
 import {
   Box,
-  Flex,
-  Grid,
-  Heading,
-  Text,
-  Link,
   Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
+  Flex,
   FormControl,
   FormLabel,
-  Input
+  Grid,
+  Heading,
+  Input,
+  Link,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Text
 } from '@chakra-ui/react';
 import { PlusIcon } from '@heroicons/react/outline';
 import { Project } from '@prisma/client';
 import axios from 'axios';
+import { GetServerSideProps } from 'next';
+import Head from 'next/head';
+import NextLink from 'next/link';
+import { useRouter } from 'next/router';
+import { useState } from 'react';
 
-import { HelpText } from '@/components';
+import { HelpText } from '@/components/ui';
 import prisma from '@/lib/prisma';
 
 type ProjectData = (Project & {

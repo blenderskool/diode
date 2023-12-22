@@ -30,7 +30,7 @@ import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 
-import { SectionHeading, SecretInput, ApiMethodTag, confirmDialog } from '@/components';
+import { SectionHeading, SecretInput, ApiMethodTag, confirmDialog } from '@/components/ui';
 import ProjectSecrets from '@/lib/contexts/ProjectSecrets';
 
 export const getServerSideProps = () => ({ props: {} });

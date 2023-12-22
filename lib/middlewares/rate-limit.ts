@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import requestIp from 'request-ip';
-import { ApiRouteWithMiddlewares } from '../../pages/api/v1/_types';
+import { ApiRouteWithMiddlewares } from '../../pages/api/v1/types';
 
 import redis from '../redis';
 

@@ -1,18 +1,18 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
 import { ApiMethod } from '@prisma/client';
 import axios from 'axios';
-import { URL } from 'url';
-import { performance } from 'perf_hooks';
 import { render } from 'micromustache';
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { performance } from 'perf_hooks';
+import { URL } from 'url';
 
-import type { ApiRouteWithProjectSecrets, QueryParams, ExpandedHeaders } from './_types';
+import type { ApiRouteWithProjectSecrets, ExpandedHeaders, QueryParams } from './types';
 
 import getApiRoute from '@/lib/internals/get-api-route';
+import { decryptSecret } from '@/lib/internals/secrets';
 import { sendResponse } from '@/lib/internals/send-response';
 import { addQueryParams, expandObjectEntries, mergeHeaders, movingAverage, substituteSecrets } from '@/lib/internals/utils';
 import * as middlewares from '@/lib/middlewares';
 import prisma from '@/lib/prisma';
-import { decryptSecret } from '@/lib/internals/secrets';
 
 
 // This code is from Next.js API Routes Middleware docs

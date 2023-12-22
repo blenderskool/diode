@@ -1,14 +1,12 @@
+import { Divider, Flex, Heading } from '@chakra-ui/react';
 import type { ApiMethod, Project as ProjectType } from '@prisma/client';
-import type { GetServerSideProps } from 'next';
-import { useRouter } from 'next/router';
-import Head from 'next/head';
-import { Flex, Heading, Divider } from '@chakra-ui/react';
 import axios from 'axios';
+import type { GetServerSideProps } from 'next';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
 
-import { ApiStats, BackLink, confirmDialog } from '@/components';
-import Apis from './_apis';
-import Secrets from './_secrets';
-import DangerZone from './_danger-zone';
+import { Apis, DangerZone, Secrets } from '@/components/sections';
+import { ApiStats, BackLink, confirmDialog } from '@/components/ui';
 import prisma from '@/lib/prisma';
 
 type ProjectData = (ProjectType & {

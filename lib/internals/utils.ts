@@ -1,7 +1,7 @@
 import type { NextApiResponse } from 'next';
 import type { OutgoingHttpHeaders } from 'http';
 import { render } from 'micromustache';
-import type { QueryParams, ExpandedHeaders, ApiRouteWithMiddlewares } from '../../pages/api/v1/_types';
+import type { QueryParams, ExpandedHeaders, ApiRouteWithMiddlewares } from '../../pages/api/v1/types';
 
 /**
  * Adds query params to the given URL object

@@ -1,53 +1,51 @@
-import type { GetServerSideProps } from 'next';
 import {
-  Flex,
-  Button,
-  Heading,
-  Divider,
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Box,
+  Button,
   Code,
-  Text,
+  Divider,
+  Flex,
   FormControl,
   FormLabel,
+  Heading,
   Input,
-  Switch,
-  Select,
-  Accordion,
-  AccordionItem,
-  AccordionButton,
-  AccordionPanel,
-  AccordionIcon,
+  Link,
   Radio,
   RadioGroup,
-  Link,
+  Select,
+  Switch,
+  Text,
   useToast,
 } from '@chakra-ui/react';
 import { CheckIcon, ClipboardCopyIcon } from '@heroicons/react/outline';
 import { ApiMethod, Project } from '@prisma/client';
-import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/router';
-import Head from 'next/head';
 import axios from 'axios';
 import copy from 'copy-to-clipboard';
+import type { GetServerSideProps } from 'next';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
+import { useCallback, useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
+import { DangerZone, Secrets } from '@/components/sections';
 import {
-  SectionHeading,
-  HelpText,
+  ApiMethodTag,
   ApiStats,
   BackLink,
+  HelpText,
   QueryParamInput,
   SecretInput,
-  ApiMethodTag,
+  SectionHeading,
   confirmDialog,
-} from '@/components';
-
-import Secrets from '../_secrets';
-import DangerZone from '../_danger-zone';
-import prisma from '@/lib/prisma';
-import { RateLimitingOptions, CachingOptions, RestrictionOptions, PartialQueryOptions } from '@/lib/middlewares';
-import { ApiRouteWithMiddlewares, ExpandedHeaders, QueryParams } from '../../../api/v1/_types';
+} from '@/components/ui';
 import ProjectSecrets from '@/lib/contexts/ProjectSecrets';
+import { CachingOptions, PartialQueryOptions, RateLimitingOptions, RestrictionOptions } from '@/lib/middlewares';
+import prisma from '@/lib/prisma';
+import { ApiRouteWithMiddlewares, ExpandedHeaders, QueryParams } from '../../../api/v1/types';
 
 const MiddlewareCard = ({ ...props }) => (
   <Flex

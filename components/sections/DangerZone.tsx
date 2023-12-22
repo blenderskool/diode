@@ -1,6 +1,6 @@
 import { Box, Flex, Button } from '@chakra-ui/react';
 import { TrashIcon } from '@heroicons/react/outline';
-import { SectionHeading } from '@/components';
+import { SectionHeading } from '@/components/ui';
 import { useState } from 'react';
 
 export const getServerSideProps = () => ({ props: {} });

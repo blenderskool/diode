@@ -1,6 +1,6 @@
 import { IpFilter } from 'express-ipfilter';
 import cors, { CorsOptions } from 'cors';
-import { ApiRouteWithMiddlewares } from '../../pages/api/v1/_types';
+import { ApiRouteWithMiddlewares } from '../../pages/api/v1/types';
 
 export interface RestrictionOptions extends MiddlewareOptions {
   type: 'HTTP' | 'IP';
