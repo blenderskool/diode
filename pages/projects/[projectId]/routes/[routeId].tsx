@@ -489,7 +489,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
             <Box width="95%" ml="auto">
               <FormControl display="flex" py="4" justifyContent="space-between" alignItems="center">
                 <FormLabel>Restriction type</FormLabel>
-                <RadioGroup experimental_spaceX="6" colorScheme="green">
+                <RadioGroup display="flex" gap="6" colorScheme="green">
                   <Radio isRequired value="HTTP" {...register('restriction.type')}>Domains</Radio>
                   <Radio isRequired value="IP" {...register('restriction.type')}>IP addresses</Radio>
                 </RadioGroup>

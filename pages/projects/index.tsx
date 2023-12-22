@@ -91,8 +91,9 @@ export default function Projects({ projects }: Props) {
       </HelpText>
       <Grid mt="16" gap="4" templateColumns="repeat(3, 1fr)">
         {projects.map((project) => (
-          <NextLink href={`/projects/${project.id}`} key={project.id}>
             <Link
+            as={NextLink}
+            href={`/projects/${project.id}`} key={project.id}
               rounded="base"
               border="solid"
               borderWidth="1px"
@@ -112,7 +113,6 @@ export default function Projects({ projects }: Props) {
                 {project._count.ApiRoute} API routes &bull; {project._count.Secret} Secrets
               </Text>
             </Link>
-          </NextLink>
         ))}
       </Grid>
       {projects.length === 0 && (
