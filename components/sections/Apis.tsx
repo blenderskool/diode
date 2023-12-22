@@ -2,6 +2,7 @@ import { ApiMethod, Project } from '@prisma/client';
 import NextLink from 'next/link';
 import {
   Box,
+  chakra,
   Flex,
   Heading,
   Text,
@@ -171,10 +172,12 @@ export default function Apis({ project, ...props }: Props) {
         <Box mt="8">
           {project.ApiRoute.map((api) => (
             <Box
+              key={api.id}
               position="relative" 
               border="1px"
               borderColor="gray.200"
               bg="white"
+              transition="all 150ms ease-out"
               _first={{ roundedTop: "md" }}
               _notFirst={{ mt: -1 }}
               _last={{ roundedBottom: "md" }}
@@ -184,7 +187,7 @@ export default function Apis({ project, ...props }: Props) {
                 <ApiMethodTag method={api.method} />
                 <Text ml="4" fontWeight="600">
                   <NextLink href={`/projects/${project.id}/routes/${api.id}`}>
-                    <Box position="absolute" inset="0" />
+                    <chakra.span position="absolute" inset="0" />
                     {api.name}
                   </NextLink>
                 </Text>

@@ -91,28 +91,29 @@ export default function Projects({ projects }: Props) {
       </HelpText>
       <Grid mt="16" gap="4" templateColumns="repeat(3, 1fr)">
         {projects.map((project) => (
-            <Link
+          <Link
             as={NextLink}
-            href={`/projects/${project.id}`} key={project.id}
-              rounded="base"
-              border="solid"
-              borderWidth="1px"
-              borderColor="gray.300"
-              px="8"
-              py="4"
-              _hover={{
-                textDecoration: "none",
-                shadow: "md",
-                transform: "scale(1.01)",
-              }}
-            >
-              <Text fontWeight="700" fontSize="xl" fontFamily="heading">
-                {project.name}
-              </Text>
-              <Text color="gray.500" fontSize="smaller" fontWeight="medium" mt="2">
-                {project._count.ApiRoute} API routes &bull; {project._count.Secret} Secrets
-              </Text>
-            </Link>
+            href={`/projects/${project.id}`}
+            key={project.id}
+            rounded="base"
+            border="solid"
+            borderWidth="1px"
+            borderColor="gray.300"
+            px="8"
+            py="4"
+            _hover={{
+              textDecoration: "none",
+              shadow: "md",
+              transform: "scale(1.01)",
+            }}
+          >
+            <Text fontWeight="700" fontSize="xl" fontFamily="heading">
+              {project.name}
+            </Text>
+            <Text color="gray.500" fontSize="smaller" fontWeight="medium" mt="2">
+              {project._count.ApiRoute} API routes &bull; {project._count.Secret} Secrets
+            </Text>
+          </Link>
         ))}
       </Grid>
       {projects.length === 0 && (

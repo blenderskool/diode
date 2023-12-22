@@ -94,7 +94,7 @@ export default function Project({ project, stats }: Props) {
   return (
     <>
       <Head>
-        <title>{projectName} | Diode 🔌</title>
+        <title>{`${projectName} | Diode 🔌`}</title>
       </Head>
       <BackLink>All Projects</BackLink>
       <Flex justifyContent="space-between">

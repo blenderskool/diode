@@ -265,7 +265,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
   return (
     <ProjectSecrets.Provider value={apiRoute.project.Secret}>
       <Head>
-        <title>{apiRoute.name} | Diode 🔌</title>
+        <title>{`${apiRoute.name} | Diode 🔌`}</title>
       </Head>
       <BackLink>Project details</BackLink>
       <Flex justifyContent="space-between">
