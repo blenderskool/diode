@@ -11,7 +11,12 @@ export type SecretInputProps = {
   containerProps?: BoxProps;
 };
 
-export default function SecretInput({ name, control, containerProps = {}, inputProps: { required = false, ...props } }: SecretInputProps) {
+export default function SecretInput({
+  name,
+  control,
+  containerProps = {},
+  inputProps: { required = false, ...props },
+}: SecretInputProps) {
   const { field } = useController({ control, name, rules: { required } });
   const highlighter = useRef(null);
   const projectSecrets = useContext(ProjectSecrets);
@@ -33,11 +38,11 @@ export default function SecretInput({ name, control, containerProps = {}, inputP
       transitionProperty="common"
       transitionDuration="normal"
       _hover={{
-        borderColor: "gray.300"
+        borderColor: 'gray.300',
       }}
       _focusWithin={{
-        borderColor: "blue.500",
-        boxShadow: "0 0 0 1px #3182ce",
+        borderColor: 'blue.500',
+        boxShadow: '0 0 0 1px #3182ce',
       }}
       {...containerProps}
     >
@@ -57,36 +62,40 @@ export default function SecretInput({ name, control, containerProps = {}, inputP
         whiteSpace="pre"
         overflowX="auto"
         css={{
-          scrollbarWidth: "none",
-          "&::-webkit-scrollbar": {
-            display: "none",
+          scrollbarWidth: 'none',
+          '&::-webkit-scrollbar': {
+            display: 'none',
           },
         }}
         {...props}
       >
-        {
-          field.value.split(/({{.*?}})/g).map((text, i) => {
-            const secretMatch = text.match(/{{(.*?)}}/);
-            if (secretMatch !== null) {
-              const matchTrimmed = secretMatch[1].trim();
-              const secretExists = projectSecrets.some(({ name }) => name.trim() === matchTrimmed);
+        {field.value.split(/({{.*?}})/g).map((text, i) => {
+          const secretMatch = text.match(/{{(.*?)}}/);
+          if (secretMatch !== null) {
+            const matchTrimmed = secretMatch[1].trim();
+            const secretExists = projectSecrets.some(
+              ({ name }) => name.trim() === matchTrimmed
+            );
 
-              return (
-                <Box
-                  as="span"
-                  key={i}
-                  bg={secretExists ? 'green.50' : 'red.50'}
-                  color={secretExists ? 'green.600' : 'red.600'}
-                  borderRadius="2px"
-                >
-                  {text}
-                </Box>
-              );
-            } else {
-              return <Box as="span" key={i}>{text}</Box>;
-            }
-          })
-        }
+            return (
+              <Box
+                as="span"
+                key={i}
+                bg={secretExists ? 'green.50' : 'red.50'}
+                color={secretExists ? 'green.600' : 'red.600'}
+                borderRadius="2px"
+              >
+                {text}
+              </Box>
+            );
+          } else {
+            return (
+              <Box as="span" key={i}>
+                {text}
+              </Box>
+            );
+          }
+        })}
       </Box>
       <Input
         name={name}
@@ -116,9 +125,12 @@ export default function SecretInput({ name, control, containerProps = {}, inputP
         onClick={syncScroll}
         onScroll={syncScroll}
         onDragOver={syncScroll}
-        onChange={(e) => { syncScroll(e); field.onChange(e); }}
+        onChange={(e) => {
+          syncScroll(e);
+          field.onChange(e);
+        }}
         {...props}
       />
     </Box>
-  )
+  );
 }

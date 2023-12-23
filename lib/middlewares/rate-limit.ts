@@ -5,9 +5,9 @@ import { ApiRouteWithMiddlewares } from '../../pages/api/v1/types';
 import redis from '../redis';
 
 export interface RateLimitingOptions extends MiddlewareOptions {
-  windowSize: number,
-  maxRequests: number,
-};
+  windowSize: number;
+  maxRequests: number;
+}
 
 /**
  * Limits the number of requests that can be made within a specified time interval
@@ -31,7 +31,7 @@ export function rateLimit(apiRoute: ApiRouteWithMiddlewares) {
     // const ttl = await redis.ttl(key);
 
     if (requests > rateLimiting.maxRequests) {
-      res.status(503).send("Too many requests made");
+      res.status(503).send('Too many requests made');
       return;
     }
 

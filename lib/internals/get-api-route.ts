@@ -1,12 +1,19 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../prisma';
 
-export default async function getApiRoute(req: NextApiRequest, res: NextApiResponse, next: Function) {
-  const { _path, ...query } = <{ _path: string[], [key: string]: string | string[] }>req.query;
+export default async function getApiRoute(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  next: Function
+) {
+  const { _path, ...query } = req.query as {
+    _path: string[];
+    [key: string]: string | string[];
+  };
 
   if (_path.length === 0) {
     // Error
-    res.status(400).send("API id is missing");
+    res.status(400).send('API id is missing');
   }
 
   const [apiId, ...remainingPath] = _path;
@@ -40,8 +47,8 @@ export default async function getApiRoute(req: NextApiRequest, res: NextApiRespo
     }
 
     next({ apiRoute, path: remainingPath });
-  } catch(err) {
+  } catch (err) {
     console.log(err);
-    return res.status(400).send("Invalid endpoint");
+    return res.status(400).send('Invalid endpoint');
   }
 }

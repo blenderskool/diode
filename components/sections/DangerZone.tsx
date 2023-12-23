@@ -10,7 +10,12 @@ type Props = {
   [key: string]: any;
 };
 
-export default function DangerZone({ onDelete, buttonText, children, ...props }: Props) {
+export default function DangerZone({
+  onDelete,
+  buttonText,
+  children,
+  ...props
+}: Props) {
   const [deleting, setDeleting] = useState(false);
 
   const deleteHandler = async () => {
@@ -27,9 +32,7 @@ export default function DangerZone({ onDelete, buttonText, children, ...props }:
   return (
     <Box {...props}>
       <Flex justifyContent="space-between">
-        <SectionHeading heading="🚨 Danger zone">
-          {children}
-        </SectionHeading>
+        <SectionHeading heading="🚨 Danger zone">{children}</SectionHeading>
         <Button
           colorScheme="red"
           color="red.500"
@@ -42,5 +45,5 @@ export default function DangerZone({ onDelete, buttonText, children, ...props }:
         </Button>
       </Flex>
     </Box>
-  )
+  );
 }

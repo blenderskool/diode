@@ -8,7 +8,9 @@ type Props = {
 export default function SectionHeading({ heading, children }: Props) {
   return (
     <div>
-      <Heading size="md" fontWeight="800" color="gray.600">{heading}</Heading>
+      <Heading size="md" fontWeight="800" color="gray.600">
+        {heading}
+      </Heading>
       {children !== undefined && (
         <Text mt="2" color="gray.600" lineHeight="tall" fontSize="sm">
           {children}

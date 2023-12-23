@@ -1,7 +1,10 @@
 import type { NextApiResponse } from 'next';
 import { setAllHeaders } from './utils';
 
-export async function sendResponse(res: NextApiResponse, apiRes: ResultResponse) {
+export async function sendResponse(
+  res: NextApiResponse,
+  apiRes: ResultResponse
+) {
   if (apiRes.statusText) {
     res.statusMessage = apiRes.statusText;
     res.status(apiRes.status);

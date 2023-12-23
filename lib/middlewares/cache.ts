@@ -11,9 +11,12 @@ import { ApiRouteWithMiddlewares } from '../../pages/api/v1/types';
 export interface CachingOptions extends MiddlewareOptions {
   // Duration in seconds
   duration: number;
-};
+}
 
-const createCacheKey = (req: NextApiRequest, apiRoute: ApiRouteWithMiddlewares) => `cache:${apiRoute.method}:${req.url}`;
+const createCacheKey = (
+  req: NextApiRequest,
+  apiRoute: ApiRouteWithMiddlewares
+) => `cache:${apiRoute.method}:${req.url}`;
 
 /**
  * Caches the result and headers from the API and returns it for some duration before refetching
@@ -35,18 +38,28 @@ export function cacheRead(apiRoute: ApiRouteWithMiddlewares) {
      * try catch not applied here as the docs say that err is always null,
      * and errors from specific commands are available in result returned
      */
-    const [[cachedHeadersError, cachedHeaders], [cacheAgeError, cacheAge], [cachedResultError, cachedResult]] = await redis.pipeline()
+    const [
+      [cachedHeadersError, cachedHeaders],
+      [cacheAgeError, cacheAge],
+      [cachedResultError, cachedResult],
+    ] = (await redis
+      .pipeline()
       .get(`${key}:headers`)
       .ttl(`${key}:headers`)
       .getBuffer(`${key}:response`)
-      .exec() as [[Error, string], [Error, number], [Error, Buffer]];
+      .exec()) as [[Error, string], [Error, number], [Error, Buffer]];
 
-    if (!cachedHeadersError && !cacheAgeError && !cachedResultError && cachedHeaders) {
-      console.log("Cache middleware: HIT!");
+    if (
+      !cachedHeadersError &&
+      !cacheAgeError &&
+      !cachedResultError &&
+      cachedHeaders
+    ) {
+      console.log('Cache middleware: HIT!');
       const headers: OutgoingHttpHeaders = JSON.parse(cachedHeaders);
 
       setAllHeaders(res, headers);
-      res.setHeader('cache-control', `max-age=${Math.max(0, cacheAge)}`)
+      res.setHeader('cache-control', `max-age=${Math.max(0, cacheAge)}`);
       res.status(200).send(cachedResult);
     } else {
       next();
@@ -75,7 +88,7 @@ export function cacheWrite(apiRoute: ApiRouteWithMiddlewares) {
       .setex(`${key}:response`, duration, buffer)
       .exec();
 
-    console.log("Cache middleware: Added to cache");
+    console.log('Cache middleware: Added to cache');
 
     const resultReadable = new Readable();
     resultReadable.push(buffer);
@@ -89,5 +102,5 @@ export function cacheWrite(apiRoute: ApiRouteWithMiddlewares) {
       data: resultReadable,
     };
     next();
-  }
+  };
 }

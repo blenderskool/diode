@@ -6,7 +6,7 @@ import {
   AlertDialogHeader,
   AlertDialogOverlay,
   Button,
-  ChakraProvider
+  ChakraProvider,
 } from '@chakra-ui/react';
 import { useRef } from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
@@ -29,7 +29,7 @@ function AlertComponent({
   description,
   btnConfirmTxt,
   onCancel,
-  onConfirm
+  onConfirm,
 }: AlertComponentProps) {
   const cancelRef = useRef();
 
@@ -38,7 +38,11 @@ function AlertComponent({
       <AlertDialog isOpen leastDestructiveRef={cancelRef} onClose={onCancel}>
         <AlertDialogOverlay>
           <AlertDialogContent>
-            <AlertDialogHeader fontFamily="heading" fontWeight="700" fontSize="2xl">
+            <AlertDialogHeader
+              fontFamily="heading"
+              fontWeight="700"
+              fontSize="2xl"
+            >
               {title}
             </AlertDialogHeader>
 

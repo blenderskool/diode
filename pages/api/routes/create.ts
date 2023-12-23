@@ -3,9 +3,12 @@ import { nanoid } from 'nanoid';
 import { URL } from 'url';
 import prisma from '@/lib/prisma';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method !== 'POST') {
-    return res.status(405).send("Method not allowed");
+    return res.status(405).send('Method not allowed');
   }
 
   const { name, method, projectId } = req.body;
@@ -19,7 +22,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (fromApiRoute === null) {
       // API route to duplicate from was not found
-      res.status(400).send("Invalid API route id was passed to 'from' parameter");
+      res
+        .status(400)
+        .send("Invalid API route id was passed to 'from' parameter");
       return;
     }
 

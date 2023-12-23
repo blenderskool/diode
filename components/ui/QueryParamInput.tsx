@@ -9,7 +9,11 @@ type Props = {
   onRemove: MouseEventHandler<HTMLButtonElement>;
 };
 
-export default function QueryParamInput({ keyProps, valueProps, onRemove }: Props) {
+export default function QueryParamInput({
+  keyProps,
+  valueProps,
+  onRemove,
+}: Props) {
   return (
     <Flex
       alignItems="center"
@@ -18,9 +22,9 @@ export default function QueryParamInput({ keyProps, valueProps, onRemove }: Prop
       borderColor="gray.100"
       p="3"
       bg="white"
-      _first={{ roundedTop: "md" }}
+      _first={{ roundedTop: 'md' }}
       _notFirst={{ mt: -1 }}
-      _last={{ roundedBottom: "md" }}
+      _last={{ roundedBottom: 'md' }}
     >
       <Input
         placeholder="Field name"
@@ -31,8 +35,12 @@ export default function QueryParamInput({ keyProps, valueProps, onRemove }: Prop
         {...keyProps}
       />
       <SecretInput
-        containerProps={{ borderColor: "gray.200", borderLeftRadius: "none", mr: "3" }}
-        inputProps={{ placeholder: "Field value"  }}
+        containerProps={{
+          borderColor: 'gray.200',
+          borderLeftRadius: 'none',
+          mr: '3',
+        }}
+        inputProps={{ placeholder: 'Field value' }}
         {...valueProps}
       />
       <IconButton

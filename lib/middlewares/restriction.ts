@@ -6,7 +6,7 @@ export interface RestrictionOptions extends MiddlewareOptions {
   type: 'HTTP' | 'IP';
   allowedOrigins: string[];
   allowedIps: string[];
-};
+}
 
 function createCorsOptions(apiRoute: ApiRouteWithMiddlewares): CorsOptions {
   const { allowedOrigins } = apiRoute.restriction;
@@ -15,7 +15,7 @@ function createCorsOptions(apiRoute: ApiRouteWithMiddlewares): CorsOptions {
       if (allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"), false);
+        callback(new Error('Not allowed by CORS'), false);
       }
     },
     methods: apiRoute.method,
@@ -38,6 +38,6 @@ export function restriction(apiRoute: ApiRouteWithMiddlewares): Function {
     case 'HTTP':
       return cors(createCorsOptions(apiRoute));
     default:
-      throw new Error("Invalid restriction type");
+      throw new Error('Invalid restriction type');
   }
 }

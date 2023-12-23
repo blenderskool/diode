@@ -7,20 +7,20 @@ type Props = TagProps & {
 
 const config: Record<ApiMethod, TagProps> = {
   GET: {
-    children: "GET",
-    colorScheme: "green",
+    children: 'GET',
+    colorScheme: 'green',
   },
   POST: {
-    children: "POST",
-    colorScheme: "yellow",
+    children: 'POST',
+    colorScheme: 'yellow',
   },
   PUT: {
-    children: "PUT",
-    colorScheme: "blue",
+    children: 'PUT',
+    colorScheme: 'blue',
   },
   DELETE: {
-    children: "DEL",
-    colorScheme: "red",
+    children: 'DEL',
+    colorScheme: 'red',
   },
 };
 

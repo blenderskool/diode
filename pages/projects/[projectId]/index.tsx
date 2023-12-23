@@ -9,7 +9,7 @@ import { Apis, DangerZone, Secrets } from '@/components/sections';
 import { ApiStats, BackLink, confirmDialog } from '@/components/ui';
 import prisma from '@/lib/prisma';
 
-type ProjectData = (ProjectType & {
+type ProjectData = ProjectType & {
   ApiRoute: {
     id: string;
     name: string;
@@ -21,7 +21,7 @@ type ProjectData = (ProjectType & {
   Secret: {
     name: string;
   }[];
-});
+};
 
 type ProjectStats = {
   totalSuccesses: number;
@@ -47,7 +47,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       Secret: {
         select: {
           name: true,
-        }
+        },
       },
     },
   });
@@ -56,27 +56,32 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
       redirect: {
         permanent: false,
-        destination: "/404"
+        destination: '/404',
       },
     };
   }
 
   const stats: ProjectStats = {
-    totalSuccesses: !project ? 0 : project.ApiRoute.reduce((sum, api) => sum + api.successes, 0),
-    totalFails: !project ? 0 : project.ApiRoute.reduce((sum, api) => sum + api.fails, 0),
+    totalSuccesses: !project
+      ? 0
+      : project.ApiRoute.reduce((sum, api) => sum + api.successes, 0),
+    totalFails: !project
+      ? 0
+      : project.ApiRoute.reduce((sum, api) => sum + api.fails, 0),
   };
 
   return { props: { project, stats } };
-}
+};
 
 type Props = {
-  project: ProjectData,
-  stats: ProjectStats,
+  project: ProjectData;
+  stats: ProjectStats;
 };
 
 export default function Project({ project, stats }: Props) {
   const router = useRouter();
-  const projectName = project.name + (!project.name.endsWith('project') ? ' project' : '');
+  const projectName =
+    project.name + (!project.name.endsWith('project') ? ' project' : '');
 
   const deleteProject = async () => {
     const confirmed = await confirmDialog({
@@ -98,7 +103,9 @@ export default function Project({ project, stats }: Props) {
       </Head>
       <BackLink>All Projects</BackLink>
       <Flex justifyContent="space-between">
-        <Heading mt="4" as="h1" size="lg" fontWeight="800">{projectName}</Heading>
+        <Heading mt="4" as="h1" size="lg" fontWeight="800">
+          {projectName}
+        </Heading>
         <ApiStats successes={stats.totalSuccesses} fails={stats.totalFails} />
       </Flex>
 
@@ -111,7 +118,8 @@ export default function Project({ project, stats }: Props) {
       <Divider my="20" />
 
       <DangerZone mb="32" onDelete={deleteProject} buttonText="Delete project">
-        Deleting a project removes all the API routes and Secrets associated with it.
+        Deleting a project removes all the API routes and Secrets associated
+        with it.
         <br />
         This action is irreverisble.
       </DangerZone>

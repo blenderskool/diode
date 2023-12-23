@@ -25,13 +25,23 @@ import {
   MenuList,
   MenuItem,
 } from '@chakra-ui/react';
-import { DuplicateIcon, TrashIcon, DotsVerticalIcon, PlusIcon } from '@heroicons/react/outline';
+import {
+  DuplicateIcon,
+  TrashIcon,
+  DotsVerticalIcon,
+  PlusIcon,
+} from '@heroicons/react/outline';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 
-import { SectionHeading, SecretInput, ApiMethodTag, confirmDialog } from '@/components/ui';
+import {
+  SectionHeading,
+  SecretInput,
+  ApiMethodTag,
+  confirmDialog,
+} from '@/components/ui';
 import ProjectSecrets from '@/lib/contexts/ProjectSecrets';
 
 type ApiRoute = {
@@ -44,12 +54,12 @@ type ApiRoute = {
 };
 
 type Props = {
-  project: (Project & {
+  project: Project & {
     ApiRoute: ApiRoute[];
     Secret: {
       name: string;
     }[];
-  });
+  };
   [key: string]: any;
 };
 
@@ -70,7 +80,7 @@ export default function Apis({ project, ...props }: Props) {
     control,
     register: registerNewForm,
     handleSubmit: handleNewFormSubmit,
-    formState: { isSubmitting: isCreatingApi }
+    formState: { isSubmitting: isCreatingApi },
   } = useForm<NewApiFormData>({
     defaultValues: {
       name: '',
@@ -91,7 +101,10 @@ export default function Apis({ project, ...props }: Props) {
     },
   });
   const [showCreationModal, setShowCreationModal] = useState(false);
-  const [duplicateModal, setDuplicateModal] = useState({ show: false, fromApiName: '' });
+  const [duplicateModal, setDuplicateModal] = useState({
+    show: false,
+    fromApiName: '',
+  });
   const [deletingApi, setDeletingApi] = useState('');
   const router = useRouter();
   const toast = useToast();
@@ -106,9 +119,13 @@ export default function Apis({ project, ...props }: Props) {
       });
       const newApiRouteId = response.data.id as string;
       router.push(`/projects/${project.id}/routes/${newApiRouteId}`);
-    } catch(err) {
+    } catch (err) {
       console.log(err);
-      toast({ status: "error", title: "Ah! An error occurred while creating the API route, maybe try again?" });
+      toast({
+        status: 'error',
+        title:
+          'Ah! An error occurred while creating the API route, maybe try again?',
+      });
     } finally {
       setShowCreationModal(false);
     }
@@ -119,12 +136,17 @@ export default function Apis({ project, ...props }: Props) {
 
     try {
       const { apiId, name } = getDuplicateFormValues();
-      const response = await axios.post(`/api/routes/create?from=${apiId}`, { name });
+      const response = await axios.post(`/api/routes/create?from=${apiId}`, {
+        name,
+      });
       const newApiRouteId = response.data.id as string;
       router.push(`/projects/${project.id}/routes/${newApiRouteId}`);
-    } catch(err) {
+    } catch (err) {
       console.log(err);
-      toast({ status: "error", title: "Ah! An error occurred while duplicating, maybe try again?" });
+      toast({
+        status: 'error',
+        title: 'Ah! An error occurred while duplicating, maybe try again?',
+      });
     } finally {
       setDuplicateModal({ show: false, fromApiName: '' });
     }
@@ -134,7 +156,7 @@ export default function Apis({ project, ...props }: Props) {
     e.stopPropagation();
     if (deletingApi) return;
     setDeletingApi(apiId);
-    
+
     const confirmed = await confirmDialog({
       title: `Delete ${apiName} API route`,
       description: `Deleting this API route will remove all configurations and immediately make its proxy URL unusable. This action is irreversible.`,
@@ -163,7 +185,12 @@ export default function Apis({ project, ...props }: Props) {
           <SectionHeading heading="🔌 API routes">
             API endpoints that are configured with Diode.
           </SectionHeading>
-          <Button onClick={() => setShowCreationModal(true)} colorScheme="green" bg="green.400" rightIcon={<PlusIcon width="16" />}>
+          <Button
+            onClick={() => setShowCreationModal(true)}
+            colorScheme="green"
+            bg="green.400"
+            rightIcon={<PlusIcon width="16" />}
+          >
             New API route
           </Button>
         </Flex>
@@ -171,15 +198,15 @@ export default function Apis({ project, ...props }: Props) {
           {project.ApiRoute.map((api) => (
             <Box
               key={api.id}
-              position="relative" 
+              position="relative"
               border="1px"
               borderColor="gray.200"
               bg="white"
               transition="all 150ms ease-out"
-              _first={{ roundedTop: "md" }}
+              _first={{ roundedTop: 'md' }}
               _notFirst={{ mt: -1 }}
-              _last={{ roundedBottom: "md" }}
-              _hover={{ bg: "gray.50" }}
+              _last={{ roundedBottom: 'md' }}
+              _hover={{ bg: 'gray.50' }}
             >
               <Flex alignItems="center" py="3" px="6">
                 <ApiMethodTag method={api.method} />
@@ -189,7 +216,15 @@ export default function Apis({ project, ...props }: Props) {
                     {api.name}
                   </NextLink>
                 </Text>
-                <Text ml="8" color="gray.500" fontSize="sm" textOverflow="ellipsis" maxW="400" whiteSpace="nowrap" overflowX="hidden">
+                <Text
+                  ml="8"
+                  color="gray.500"
+                  fontSize="sm"
+                  textOverflow="ellipsis"
+                  maxW="400"
+                  whiteSpace="nowrap"
+                  overflowX="hidden"
+                >
                   {decodeURI(api.apiUrl)}
                 </Text>
                 <Menu id="route-options" isLazy>
@@ -201,13 +236,20 @@ export default function Apis({ project, ...props }: Props) {
                     size="sm"
                     ml="auto"
                     isLoading={api.id === deletingApi}
-                    onClick={e => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
                   />
                   <MenuList minWidth="auto" fontSize="sm">
-                    <MenuItem icon={<DuplicateIcon width="16" />} onClick={(e) => openDuplicateApiModal(e, api)}>
+                    <MenuItem
+                      icon={<DuplicateIcon width="16" />}
+                      onClick={(e) => openDuplicateApiModal(e, api)}
+                    >
                       Duplicate
                     </MenuItem>
-                    <MenuItem icon={<TrashIcon width="16" />} color="red.500" onClick={(e) => deleteApi(e, api.id, api.name)}>
+                    <MenuItem
+                      icon={<TrashIcon width="16" />}
+                      color="red.500"
+                      onClick={(e) => deleteApi(e, api.id, api.name)}
+                    >
                       Delete
                     </MenuItem>
                   </MenuList>
@@ -223,31 +265,55 @@ export default function Apis({ project, ...props }: Props) {
         </Box>
       </Box>
 
-      <Modal size="lg" isOpen={showCreationModal} onClose={() => setShowCreationModal(false)}>
+      <Modal
+        size="lg"
+        isOpen={showCreationModal}
+        onClose={() => setShowCreationModal(false)}
+      >
         <ModalOverlay />
         <ModalContent p="2" pt="4">
           <ModalHeader>
-            <Heading fontFamily="heading" fontWeight="700" fontSize="2xl">New API route</Heading>
-            <Text fontSize="small" color="gray.500" fontWeight="500" mt="2">Let&apos;s get building! 💪</Text>
+            <Heading fontFamily="heading" fontWeight="700" fontSize="2xl">
+              New API route
+            </Heading>
+            <Text fontSize="small" color="gray.500" fontWeight="500" mt="2">
+              Let&apos;s get building! 💪
+            </Text>
           </ModalHeader>
           <form onSubmit={handleNewFormSubmit(createApi)}>
             <ModalBody py={8}>
               <FormControl>
                 <FormLabel>API route name</FormLabel>
-                <Input placeholder="Notion API" required {...registerNewForm("name")} />
+                <Input
+                  placeholder="Notion API"
+                  required
+                  {...registerNewForm('name')}
+                />
               </FormControl>
               <Flex mt="8">
                 <FormControl width="120px">
                   <FormLabel>Method</FormLabel>
-                  <Select roundedRight="none" required {...registerNewForm("method")}>
-                    {Object.keys(ApiMethod).map((method) => <option key={method} value={method}>{method}</option>)}
+                  <Select
+                    roundedRight="none"
+                    required
+                    {...registerNewForm('method')}
+                  >
+                    {Object.keys(ApiMethod).map((method) => (
+                      <option key={method} value={method}>
+                        {method}
+                      </option>
+                    ))}
                   </Select>
                 </FormControl>
                 <FormControl width="calc(100% - 120px)">
                   <FormLabel>Endpoint URL</FormLabel>
                   <SecretInput
-                    inputProps={{ type: "url", placeholder: "https://api.example.com", required: true }}
-                    containerProps={{ ml: "-1px", roundedLeft: "none" }}
+                    inputProps={{
+                      type: 'url',
+                      placeholder: 'https://api.example.com',
+                      required: true,
+                    }}
+                    containerProps={{ ml: '-1px', roundedLeft: 'none' }}
                     control={control}
                     name="apiUrl"
                   />
@@ -256,7 +322,13 @@ export default function Apis({ project, ...props }: Props) {
             </ModalBody>
 
             <ModalFooter>
-              <Button type="submit" colorScheme="green" bg="green.400" width="full" isLoading={isCreatingApi}>
+              <Button
+                type="submit"
+                colorScheme="green"
+                bg="green.400"
+                width="full"
+                isLoading={isCreatingApi}
+              >
                 Create &amp; configure API route ›
               </Button>
             </ModalFooter>
@@ -266,25 +338,43 @@ export default function Apis({ project, ...props }: Props) {
         </ModalContent>
       </Modal>
 
-      <Modal size="lg" isOpen={duplicateModal.show} onClose={() => setDuplicateModal({ show: false, fromApiName: '' })}>
+      <Modal
+        size="lg"
+        isOpen={duplicateModal.show}
+        onClose={() => setDuplicateModal({ show: false, fromApiName: '' })}
+      >
         <ModalOverlay />
         <ModalContent p="2" pt="4">
           <ModalHeader>
-            <Heading fontFamily="heading" fontWeight="700" fontSize="2xl">Duplicate &quot;{duplicateModal.fromApiName}&quot; API route</Heading>
+            <Heading fontFamily="heading" fontWeight="700" fontSize="2xl">
+              Duplicate &quot;{duplicateModal.fromApiName}&quot; API route
+            </Heading>
             <Text fontSize="small" color="gray.500" fontWeight="500" mt="2">
-              This action will create a new API route with the same configuration as &quot;{duplicateModal.fromApiName}&quot; API route.
+              This action will create a new API route with the same
+              configuration as &quot;{duplicateModal.fromApiName}&quot; API
+              route.
             </Text>
           </ModalHeader>
           <form onSubmit={handleDuplicateFormSubmit(duplicateApi)}>
             <ModalBody py={8}>
               <FormControl>
                 <FormLabel>API route name</FormLabel>
-                <Input placeholder="Notion API" required {...registerDuplicateForm("name")} />
+                <Input
+                  placeholder="Notion API"
+                  required
+                  {...registerDuplicateForm('name')}
+                />
               </FormControl>
             </ModalBody>
 
             <ModalFooter>
-              <Button type="submit" colorScheme="green" bg="green.400" width="full" isLoading={isDuplicatingApi}>
+              <Button
+                type="submit"
+                colorScheme="green"
+                bg="green.400"
+                width="full"
+                isLoading={isDuplicatingApi}
+              >
                 Duplicate &amp; configure API route ›
               </Button>
             </ModalFooter>

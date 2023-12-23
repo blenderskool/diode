@@ -43,9 +43,18 @@ import {
   confirmDialog,
 } from '@/components/ui';
 import ProjectSecrets from '@/lib/contexts/ProjectSecrets';
-import { CachingOptions, PartialQueryOptions, RateLimitingOptions, RestrictionOptions } from '@/lib/middlewares';
+import {
+  CachingOptions,
+  PartialQueryOptions,
+  RateLimitingOptions,
+  RestrictionOptions,
+} from '@/lib/middlewares';
 import prisma from '@/lib/prisma';
-import { ApiRouteWithMiddlewares, ExpandedHeaders, QueryParams } from '../../../api/v1/types';
+import {
+  ApiRouteWithMiddlewares,
+  ExpandedHeaders,
+  QueryParams,
+} from '../../../api/v1/types';
 
 const MiddlewareCard = ({ ...props }) => (
   <Flex
@@ -70,8 +79,8 @@ type FormData = {
   method: string;
   apiUrl: string;
   forwardRequestData: boolean;
-  queryParams: { name: string, value: string }[];
-  headers: { name: string, value: string }[];
+  queryParams: { name: string; value: string }[];
+  headers: { name: string; value: string }[];
 
   restriction: Omit<RestrictionOptions, 'allowedIps' | 'allowedOrigins'> & {
     allowedIps: string;
@@ -93,10 +102,13 @@ const applyQueryParams = (apiUrl: string, query: QueryParams) => {
    * making URL harder to read
    */
   const queryString = [...searchParams.entries()]
-    .map(([ key, value ]) => `${key}=${value}`)
-    .join("&");
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&');
 
-  return decodeURI(url.origin + url.pathname) + (queryString ? '?' + queryString : '');
+  return (
+    decodeURI(url.origin + url.pathname) +
+    (queryString ? '?' + queryString : '')
+  );
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
@@ -110,18 +122,18 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
           Secret: {
             select: {
               name: true,
-            }
+            },
           },
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   if (apiRoute === null) {
     return {
       redirect: {
         permanent: false,
-        destination: "/404"
+        destination: '/404',
       },
     };
   }
@@ -140,13 +152,32 @@ type Props = {
 };
 
 export default function ApiRoutePage({ apiRoute }: Props) {
-  const { register, handleSubmit, getValues, watch, control, setValue, formState: { isSubmitting } } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    watch,
+    control,
+    setValue,
+    formState: { isSubmitting },
+  } = useForm<FormData>({
     defaultValues: {
-      apiUrl: applyQueryParams(apiRoute.apiUrl, apiRoute.queryParams as QueryParams),
+      apiUrl: applyQueryParams(
+        apiRoute.apiUrl,
+        apiRoute.queryParams as QueryParams
+      ),
       method: apiRoute.method,
       forwardRequestData: apiRoute.forwardRequestData,
-      queryParams: (apiRoute.queryParams as QueryParams).map(([name, value]) => ({ name, value })) ?? [],
-      headers: (apiRoute.headers as ExpandedHeaders).map(([name, value]) => ({ name, value })) ?? [],
+      queryParams:
+        (apiRoute.queryParams as QueryParams).map(([name, value]) => ({
+          name,
+          value,
+        })) ?? [],
+      headers:
+        (apiRoute.headers as ExpandedHeaders).map(([name, value]) => ({
+          name,
+          value,
+        })) ?? [],
       restriction: {
         enabled: apiRoute.restriction.enabled ?? false,
         type: apiRoute.restriction.type ?? 'HTTP',
@@ -165,13 +196,21 @@ export default function ApiRoutePage({ apiRoute }: Props) {
       partialQuery: {
         enabled: apiRoute.partialQuery.enabled ?? false,
       },
-    }
+    },
   });
-  const { append: appendHeader, remove: removeHeader, fields: headerFields } = useFieldArray({
+  const {
+    append: appendHeader,
+    remove: removeHeader,
+    fields: headerFields,
+  } = useFieldArray({
     control,
     name: 'headers',
   });
-  const { append: appendQueryParam, remove: removeQueryParam, fields: queryParamFields } = useFieldArray({
+  const {
+    append: appendQueryParam,
+    remove: removeQueryParam,
+    fields: queryParamFields,
+  } = useFieldArray({
     control,
     name: 'queryParams',
   });
@@ -180,24 +219,33 @@ export default function ApiRoutePage({ apiRoute }: Props) {
   const toast = useToast();
   const [proxyUrl, setProxyUrl] = useState('');
 
-  const syncUrlAndQueryParams = useCallback((_, { name, type }) => {
-    if (type !== 'change') return;
+  const syncUrlAndQueryParams = useCallback(
+    (_, { name, type }) => {
+      if (type !== 'change') return;
 
-    const [apiUrl, queryParams] = getValues(['apiUrl', 'queryParams']);
+      const [apiUrl, queryParams] = getValues(['apiUrl', 'queryParams']);
 
-    try {
-      if (name === 'apiUrl') {
-        const url = new URL(apiUrl);
-        setValue('queryParams', [...url.searchParams].map(([name, value]) => ({ name, value })));
-      } else if (name.startsWith('queryParams')) {
-        const qp: QueryParams = queryParams.map(({ name, value }) => [name, value]);
-        setValue('apiUrl', applyQueryParams(apiUrl, qp));
+      try {
+        if (name === 'apiUrl') {
+          const url = new URL(apiUrl);
+          setValue(
+            'queryParams',
+            [...url.searchParams].map(([name, value]) => ({ name, value }))
+          );
+        } else if (name.startsWith('queryParams')) {
+          const qp: QueryParams = queryParams.map(({ name, value }) => [
+            name,
+            value,
+          ]);
+          setValue('apiUrl', applyQueryParams(apiUrl, qp));
+        }
+      } catch (err) {
+        // Ignore error as further updates might resolve correctly
+        console.log(err);
       }
-    } catch(err) {
-      // Ignore error as further updates might resolve correctly
-      console.log(err);
-    }
-  }, [setValue, getValues]);
+    },
+    [setValue, getValues]
+  );
 
   useEffect(() => {
     setProxyUrl(`${window.location.origin}/api/v1/${apiRoute.id}`);
@@ -222,9 +270,12 @@ export default function ApiRoutePage({ apiRoute }: Props) {
   const copyProxyUrl = () => {
     try {
       copy(proxyUrl);
-      toast({ status: "success", title: "Copied proxy URL" });
+      toast({ status: 'success', title: 'Copied proxy URL' });
     } catch {
-      toast({ status: "error", title: "Ah! There was an error, maybe try again" });
+      toast({
+        status: 'error',
+        title: 'Ah! There was an error, maybe try again',
+      });
     }
   };
 
@@ -233,19 +284,29 @@ export default function ApiRoutePage({ apiRoute }: Props) {
       const updatedApiRoute = getValues();
       await axios.post(`/api/routes/${apiRoute.id}`, {
         ...updatedApiRoute,
-        queryParams: updatedApiRoute.queryParams.map(({ name, value }) => [name, value]),
-        headers: updatedApiRoute.headers.map(({ name, value }) => [name, value]),
+        queryParams: updatedApiRoute.queryParams.map(({ name, value }) => [
+          name,
+          value,
+        ]),
+        headers: updatedApiRoute.headers.map(({ name, value }) => [
+          name,
+          value,
+        ]),
         restriction: {
           ...updatedApiRoute.restriction,
           allowedIps: updatedApiRoute.restriction.allowedIps.split(/,\s*/),
-          allowedOrigins: updatedApiRoute.restriction.allowedOrigins.split(/,\s*/),
+          allowedOrigins:
+            updatedApiRoute.restriction.allowedOrigins.split(/,\s*/),
         },
       });
       router.replace(router.asPath, undefined, { scroll: false });
-      toast({ status: "success", title: "Changes saved successfully" });
-    } catch(err) {
+      toast({ status: 'success', title: 'Changes saved successfully' });
+    } catch (err) {
       console.log(err);
-      toast({ status: "error", title: "Ah! There was an error, maybe try again" });
+      toast({
+        status: 'error',
+        title: 'Ah! There was an error, maybe try again',
+      });
     }
   };
 
@@ -272,19 +333,32 @@ export default function ApiRoutePage({ apiRoute }: Props) {
         <Heading mt="4" as="h1" size="lg" fontWeight="800">
           {apiRoute.name}
         </Heading>
-        <ApiStats successes={apiRoute.successes} fails={apiRoute.fails} avgResponseTime={apiRoute.avgResponseMs} />
+        <ApiStats
+          successes={apiRoute.successes}
+          fails={apiRoute.fails}
+          avgResponseTime={apiRoute.avgResponseMs}
+        />
       </Flex>
 
       {/* Proxy endpoint section */}
       <Box mt="20">
         <SectionHeading heading="🪄 Proxy endpoint">
-          Diode will forward all the requests made to the below URL to the origin endpoint.
+          Diode will forward all the requests made to the below URL to the
+          origin endpoint.
           <br />
-          <strong>No API keys are required</strong> and the request and response <strong>structure is same</strong> as that of the origin endpoint.
+          <strong>No API keys are required</strong> and the request and response{' '}
+          <strong>structure is same</strong> as that of the origin endpoint.
         </SectionHeading>
         <Flex mt="8" alignItems="center">
           <ApiMethodTag method={apiRoute.method} size="lg" />
-          <Text fontWeight="600" mx="4" minWidth="0" textOverflow="ellipsis" overflowX="hidden" whiteSpace="nowrap">
+          <Text
+            fontWeight="600"
+            mx="4"
+            minWidth="0"
+            textOverflow="ellipsis"
+            overflowX="hidden"
+            whiteSpace="nowrap"
+          >
             {proxyUrl}
           </Text>
           <Button
@@ -312,7 +386,11 @@ export default function ApiRoutePage({ apiRoute }: Props) {
             <FormControl width="150px">
               <FormLabel>Method</FormLabel>
               <Select roundedRight="none" required {...register('method')}>
-                {Object.keys(ApiMethod).map((method) => <option key={method} value={method}>{method}</option>)}
+                {Object.keys(ApiMethod).map((method) => (
+                  <option key={method} value={method}>
+                    {method}
+                  </option>
+                ))}
               </Select>
             </FormControl>
             <FormControl width="calc(100% - 150px)">
@@ -320,23 +398,41 @@ export default function ApiRoutePage({ apiRoute }: Props) {
               <SecretInput
                 name="apiUrl"
                 control={control}
-                inputProps={{ placeholder: 'https://api.example.com', type: 'url', required: true }}
+                inputProps={{
+                  placeholder: 'https://api.example.com',
+                  type: 'url',
+                  required: true,
+                }}
                 containerProps={{ ml: '-1px', roundedLeft: 'none' }}
               />
             </FormControl>
           </Flex>
 
-          <FormControl mt="8" display="flex" py="4" justifyContent="space-between" alignItems="center">
+          <FormControl
+            mt="8"
+            display="flex"
+            py="4"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <FormLabel>
               Request data forwarding
               <HelpText mt="2">
-                Enabling this option allows query parameters and headers in the client request to be
-                <br />forwarded to the origin endpoint. Disabling this option would still pass the query
-                <br />parameters and headers configured below.
+                Enabling this option allows query parameters and headers in the
+                client request to be
+                <br />
+                forwarded to the origin endpoint. Disabling this option would
+                still pass the query
+                <br />
+                parameters and headers configured below.
               </HelpText>
             </FormLabel>
-            <Switch colorScheme="green" size="lg" {...register('forwardRequestData')} />
-          </FormControl>          
+            <Switch
+              colorScheme="green"
+              size="lg"
+              {...register('forwardRequestData')}
+            />
+          </FormControl>
 
           <Accordion mt="8" allowMultiple>
             <AccordionItem>
@@ -362,23 +458,34 @@ export default function ApiRoutePage({ apiRoute }: Props) {
               </AccordionButton>
               <AccordionPanel>
                 <HelpText mb="4">
-                  You can refer to secrets in value field using <Code>{"{{ SECRET_NAME }}"}</Code>
+                  You can refer to secrets in value field using{' '}
+                  <Code>{'{{ SECRET_NAME }}'}</Code>
                 </HelpText>
-                {
-                  queryParamFields.map((field, idx) => (
-                    <QueryParamInput
-                      key={field.id}
-                      keyProps={register(`queryParams.${idx}.name`)}
-                      valueProps={{ name: `queryParams.${idx}.value`, control }}
-                      onRemove={() => {
-                        removeQueryParam(idx);
-                        // Explicit call to watch handler because fieldarray events are not captured by react-hook-form
-                        syncUrlAndQueryParams({}, { name: 'queryParams', type: 'change' });
-                      }}
-                    />
-                  ))
-                }
-                {getValues('queryParams').length === 0 && <Box textAlign="center" my="12" color="gray.600" fontWeight="600">No query parameters added</Box>}
+                {queryParamFields.map((field, idx) => (
+                  <QueryParamInput
+                    key={field.id}
+                    keyProps={register(`queryParams.${idx}.name`)}
+                    valueProps={{ name: `queryParams.${idx}.value`, control }}
+                    onRemove={() => {
+                      removeQueryParam(idx);
+                      // Explicit call to watch handler because fieldarray events are not captured by react-hook-form
+                      syncUrlAndQueryParams(
+                        {},
+                        { name: 'queryParams', type: 'change' }
+                      );
+                    }}
+                  />
+                ))}
+                {getValues('queryParams').length === 0 && (
+                  <Box
+                    textAlign="center"
+                    my="12"
+                    color="gray.600"
+                    fontWeight="600"
+                  >
+                    No query parameters added
+                  </Box>
+                )}
               </AccordionPanel>
             </AccordionItem>
             <AccordionItem>
@@ -404,19 +511,27 @@ export default function ApiRoutePage({ apiRoute }: Props) {
               </AccordionButton>
               <AccordionPanel>
                 <HelpText mb="4">
-                  You can refer to secrets in value field using <Code>{"{{ SECRET_NAME }}"}</Code>
+                  You can refer to secrets in value field using{' '}
+                  <Code>{'{{ SECRET_NAME }}'}</Code>
                 </HelpText>
-                {
-                  headerFields.map((field, idx) => (
-                    <QueryParamInput
-                      key={field.id}
-                      keyProps={register(`headers.${idx}.name`)}
-                      valueProps={{ name: `headers.${idx}.value`, control }}
-                      onRemove={() => removeHeader(idx)}
-                    />
-                  ))
-                }
-                {getValues('headers').length === 0 && <Box textAlign="center" my="12" color="gray.600" fontWeight="600">No headers added</Box>}
+                {headerFields.map((field, idx) => (
+                  <QueryParamInput
+                    key={field.id}
+                    keyProps={register(`headers.${idx}.name`)}
+                    valueProps={{ name: `headers.${idx}.value`, control }}
+                    onRemove={() => removeHeader(idx)}
+                  />
+                ))}
+                {getValues('headers').length === 0 && (
+                  <Box
+                    textAlign="center"
+                    my="12"
+                    color="gray.600"
+                    fontWeight="600"
+                  >
+                    No headers added
+                  </Box>
+                )}
               </AccordionPanel>
             </AccordionItem>
           </Accordion>
@@ -427,7 +542,8 @@ export default function ApiRoutePage({ apiRoute }: Props) {
         {/* Request flow diagram */}
         <Box>
           <SectionHeading heading="📡 Request flow">
-            This flow shows all the middlewares applied on calls from receiving a request to returning a response.
+            This flow shows all the middlewares applied on calls from receiving
+            a request to returning a response.
           </SectionHeading>
           <Flex mt="10" alignItems="center">
             <Flex flex="1" flexDirection="column" position="relative" mt="2">
@@ -435,13 +551,33 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                 {/* Request Line */}
                 <Box position="absolute" h="1px" bg="gray.300" width="100%" />
 
-                <Flex position="relative" zIndex="10" alignItems="center" width="100%">
-                  {isRestrictionsEnabled && <MiddlewareCard>🚫 Restrictions</MiddlewareCard>}
-                  {isRateLimitingEnabled && <MiddlewareCard>⏱️ Rate Limiting</MiddlewareCard>}
-                  {isCachingEnabled && <MiddlewareCard>📌 Caching read</MiddlewareCard>}
-                  
+                <Flex
+                  position="relative"
+                  zIndex="10"
+                  alignItems="center"
+                  width="100%"
+                >
+                  {isRestrictionsEnabled && (
+                    <MiddlewareCard>🚫 Restrictions</MiddlewareCard>
+                  )}
+                  {isRateLimitingEnabled && (
+                    <MiddlewareCard>⏱️ Rate Limiting</MiddlewareCard>
+                  )}
+                  {isCachingEnabled && (
+                    <MiddlewareCard>📌 Caching read</MiddlewareCard>
+                  )}
+
                   {/* Arrow */}
-                  <Box as="span" ml="auto" mr="1px" borderWidth="0 1px 1px 0" p="4px" borderColor="gray.400" display="inline-block" transform="rotate(-45deg)" />
+                  <Box
+                    as="span"
+                    ml="auto"
+                    mr="1px"
+                    borderWidth="0 1px 1px 0"
+                    p="4px"
+                    borderColor="gray.400"
+                    display="inline-block"
+                    transform="rotate(-45deg)"
+                  />
                 </Flex>
               </Flex>
 
@@ -449,12 +585,28 @@ export default function ApiRoutePage({ apiRoute }: Props) {
                 {/* Response Line */}
                 <Box position="absolute" h="1px" bg="gray.300" width="100%" />
 
-                <Flex position="relative" zIndex="10" alignItems="center" width="100%">
+                <Flex
+                  position="relative"
+                  zIndex="10"
+                  alignItems="center"
+                  width="100%"
+                >
                   {/* Arrow */}
-                  <Box as="span" ml="1px" borderWidth="0 1px 1px 0" p="4px" borderColor="gray.400" display="inline-block" transform="rotate(135deg)" />
-                  {isCachingEnabled && <MiddlewareCard>📌 Caching write</MiddlewareCard>}
-                  {isPartialQueryEnabled && <MiddlewareCard>✂️ Partial Query</MiddlewareCard>}
-                  
+                  <Box
+                    as="span"
+                    ml="1px"
+                    borderWidth="0 1px 1px 0"
+                    p="4px"
+                    borderColor="gray.400"
+                    display="inline-block"
+                    transform="rotate(135deg)"
+                  />
+                  {isCachingEnabled && (
+                    <MiddlewareCard>📌 Caching write</MiddlewareCard>
+                  )}
+                  {isPartialQueryEnabled && (
+                    <MiddlewareCard>✂️ Partial Query</MiddlewareCard>
+                  )}
                 </Flex>
               </Flex>
             </Flex>
@@ -470,142 +622,230 @@ export default function ApiRoutePage({ apiRoute }: Props) {
         {/* Middlewares section */}
         <Box>
           <SectionHeading heading="📦 Middlewares">
-            Middlewares allow you to add additional functionality before the request reaches the origin endpoint.
+            Middlewares allow you to add additional functionality before the
+            request reaches the origin endpoint.
             <br />
-            Use these only if origin endpoints don&apos;t provide these features already, as they may add processing time.
+            Use these only if origin endpoints don&apos;t provide these features
+            already, as they may add processing time.
           </SectionHeading>
-          <FormControl mt="8" display="flex" py="4" justifyContent="space-between" alignItems="center">
+          <FormControl
+            mt="8"
+            display="flex"
+            py="4"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <FormLabel>
               🚫 Restrictions
               <HelpText mt="2">
-                Restricts access to the API route only to some specific domains or IP addresses.
+                Restricts access to the API route only to some specific domains
+                or IP addresses.
               </HelpText>
             </FormLabel>
-            <Switch colorScheme="green" size="lg" {...register('restriction.enabled')} />
+            <Switch
+              colorScheme="green"
+              size="lg"
+              {...register('restriction.enabled')}
+            />
           </FormControl>
           {isRestrictionsEnabled && (
             <Box width="95%" ml="auto">
-              <FormControl display="flex" py="4" justifyContent="space-between" alignItems="center">
+              <FormControl
+                display="flex"
+                py="4"
+                justifyContent="space-between"
+                alignItems="center"
+              >
                 <FormLabel>Restriction type</FormLabel>
                 <RadioGroup display="flex" gap="6" colorScheme="green">
-                  <Radio isRequired value="HTTP" {...register('restriction.type')}>Domains</Radio>
-                  <Radio isRequired value="IP" {...register('restriction.type')}>IP addresses</Radio>
+                  <Radio
+                    isRequired
+                    value="HTTP"
+                    {...register('restriction.type')}
+                  >
+                    Domains
+                  </Radio>
+                  <Radio
+                    isRequired
+                    value="IP"
+                    {...register('restriction.type')}
+                  >
+                    IP addresses
+                  </Radio>
                 </RadioGroup>
               </FormControl>
-              {
-                watch('restriction.type') === 'IP' && (
-                  <FormControl display="flex" py="4" justifyContent="space-between" alignItems="center">
-                    <FormLabel>
-                      Whitelist IP addresses
-                      <HelpText mt="2">
-                        Separate IP addresses by comma.
-                        <br/>
-                        Wildcards, CIDR subnets supported.
-                      </HelpText>
-                    </FormLabel>
-                    <Input
-                      width="50%"
-                      placeholder="127.0.0.1, 127.0.0.1/24, 10.1.*.*"
-                      {...register('restriction.allowedIps')}
-                    />
-                  </FormControl>
-                )
-              }
-              {
-                watch('restriction.type') === 'HTTP' && (
-                  <FormControl display="flex" py="4" justifyContent="space-between" alignItems="center">
-                    <FormLabel>
-                      Whitelist domains
-                      <HelpText mt="2">
-                        Domains should be fully qualified with protocol.
-                        <br/>
-                        Wildcards not supported currently.
-                      </HelpText>
-                    </FormLabel>
-                    <Input
-                      width="50%"
-                      placeholder="https://example.com, http://demo.example.com"
-                      {...register('restriction.allowedOrigins')}
-                    />
-                  </FormControl>
-                )
-              }
+              {watch('restriction.type') === 'IP' && (
+                <FormControl
+                  display="flex"
+                  py="4"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <FormLabel>
+                    Whitelist IP addresses
+                    <HelpText mt="2">
+                      Separate IP addresses by comma.
+                      <br />
+                      Wildcards, CIDR subnets supported.
+                    </HelpText>
+                  </FormLabel>
+                  <Input
+                    width="50%"
+                    placeholder="127.0.0.1, 127.0.0.1/24, 10.1.*.*"
+                    {...register('restriction.allowedIps')}
+                  />
+                </FormControl>
+              )}
+              {watch('restriction.type') === 'HTTP' && (
+                <FormControl
+                  display="flex"
+                  py="4"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <FormLabel>
+                    Whitelist domains
+                    <HelpText mt="2">
+                      Domains should be fully qualified with protocol.
+                      <br />
+                      Wildcards not supported currently.
+                    </HelpText>
+                  </FormLabel>
+                  <Input
+                    width="50%"
+                    placeholder="https://example.com, http://demo.example.com"
+                    {...register('restriction.allowedOrigins')}
+                  />
+                </FormControl>
+              )}
             </Box>
           )}
 
-          <FormControl mt="8" display="flex" py="4" justifyContent="space-between" alignItems="center">
+          <FormControl
+            mt="8"
+            display="flex"
+            py="4"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <FormLabel>
               ⏱️ Rate Limiting
               <HelpText mt="2">
-                Limits the number of calls every IP address can make within a time interval.
+                Limits the number of calls every IP address can make within a
+                time interval.
               </HelpText>
             </FormLabel>
-            <Switch colorScheme="green" size="lg" {...register('rateLimiting.enabled')} />
+            <Switch
+              colorScheme="green"
+              size="lg"
+              {...register('rateLimiting.enabled')}
+            />
           </FormControl>
-          {
-            isRateLimitingEnabled && (
-              <Box width="95%" ml="auto">
-                <FormControl display="flex" py="4" justifyContent="space-between" alignItems="center">
-                  <FormLabel>Max number of requests</FormLabel>
-                  <Input
-                    type="number"
-                    width="20%"
-                    required
-                    {...register('rateLimiting.maxRequests')}
-                  />
-                </FormControl>
-                <FormControl display="flex" py="4" justifyContent="space-between" alignItems="center">
-                  <FormLabel>Window size(in seconds)</FormLabel>
-                  <Input
-                    type="number"
-                    width="20%"
-                    required
-                    {...register('rateLimiting.windowSize')}
-                  />
-                </FormControl>
-              </Box>
-            )
-          }
+          {isRateLimitingEnabled && (
+            <Box width="95%" ml="auto">
+              <FormControl
+                display="flex"
+                py="4"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <FormLabel>Max number of requests</FormLabel>
+                <Input
+                  type="number"
+                  width="20%"
+                  required
+                  {...register('rateLimiting.maxRequests')}
+                />
+              </FormControl>
+              <FormControl
+                display="flex"
+                py="4"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <FormLabel>Window size(in seconds)</FormLabel>
+                <Input
+                  type="number"
+                  width="20%"
+                  required
+                  {...register('rateLimiting.windowSize')}
+                />
+              </FormControl>
+            </Box>
+          )}
 
-          <FormControl mt="8" display="flex" py="4" justifyContent="space-between" alignItems="center">
+          <FormControl
+            mt="8"
+            display="flex"
+            py="4"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <FormLabel>
               📌 Caching
               <HelpText mt="2">
-                Caches the result from origin endpoint and returns it for further calls within a time interval.
+                Caches the result from origin endpoint and returns it for
+                further calls within a time interval.
               </HelpText>
             </FormLabel>
-            <Switch colorScheme="green" size="lg" {...register('caching.enabled')} />
+            <Switch
+              colorScheme="green"
+              size="lg"
+              {...register('caching.enabled')}
+            />
           </FormControl>
-          {
-            isCachingEnabled && (
-              <Box width="95%" ml="auto">
-                <FormControl display="flex" py="4" justifyContent="space-between" alignItems="center">
-                  <FormLabel>Cache duration(in seconds)</FormLabel>
-                  <Input
-                    type="number"
-                    width="20%"
-                    required
-                    {...register('caching.duration')}
-                  />
-                </FormControl>
-              </Box>
-            )
-          }
+          {isCachingEnabled && (
+            <Box width="95%" ml="auto">
+              <FormControl
+                display="flex"
+                py="4"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <FormLabel>Cache duration(in seconds)</FormLabel>
+                <Input
+                  type="number"
+                  width="20%"
+                  required
+                  {...register('caching.duration')}
+                />
+              </FormControl>
+            </Box>
+          )}
 
-          <FormControl mt="8" display="flex" py="4" justifyContent="space-between" alignItems="center">
+          <FormControl
+            mt="8"
+            display="flex"
+            py="4"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <FormLabel>
               ✂️ Partial Query
               <HelpText mt="2">
-                Query for only relevant fields in the JSON response, by passing <Code>diode-filter</Code> query param.
+                Query for only relevant fields in the JSON response, by passing{' '}
+                <Code>diode-filter</Code> query param.
               </HelpText>
               <HelpText>
-                Note: This middleware consumes the origin API response and structure of response is not preserved.
+                Note: This middleware consumes the origin API response and
+                structure of response is not preserved.
               </HelpText>
               <HelpText>
-                <Link href="https://github.com/nemtsov/json-mask#syntax" color="green.500" isExternal>Syntax reference</Link>.
+                <Link
+                  href="https://github.com/nemtsov/json-mask#syntax"
+                  color="green.500"
+                  isExternal
+                >
+                  Syntax reference
+                </Link>
+                .
               </HelpText>
             </FormLabel>
-            <Switch colorScheme="green" size="lg" {...register('partialQuery.enabled')} />
+            <Switch
+              colorScheme="green"
+              size="lg"
+              {...register('partialQuery.enabled')}
+            />
           </FormControl>
         </Box>
 
@@ -628,7 +868,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
       <Divider my="20" />
 
       {/* Secrets section */}
-      <Secrets project={apiRoute.project}  />
+      <Secrets project={apiRoute.project} />
 
       <Divider my="20" />
 

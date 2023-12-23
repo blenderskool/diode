@@ -6,10 +6,9 @@ const theme = extendTheme({
     useSystemColorMode: false,
   },
   fonts: {
-    heading: "Raleway",
-    body: "Inter",
+    heading: 'Raleway',
+    body: 'Inter',
   },
 } as ThemeConfig);
-
 
 export default theme;

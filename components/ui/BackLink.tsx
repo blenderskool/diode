@@ -7,7 +7,12 @@ export default function BackLink(props) {
 
   return (
     <div>
-      <Button variant="link" leftIcon={<ChevronLeftIcon width="16" />} onClick={router.back} {...props} />
+      <Button
+        variant="link"
+        leftIcon={<ChevronLeftIcon width="16" />}
+        onClick={router.back}
+        {...props}
+      />
     </div>
-  )
+  );
 }

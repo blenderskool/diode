@@ -6,7 +6,11 @@ import { createCipheriv, createDecipheriv } from 'crypto';
  * @returns encrypted value
  */
 export function encryptSecret(secret: string) {
-  const cipher = createCipheriv('aes256', process.env.SECRETS_KEY, process.env.SECRETS_IV);
+  const cipher = createCipheriv(
+    'aes256',
+    process.env.SECRETS_KEY,
+    process.env.SECRETS_IV
+  );
   return cipher.update(secret, 'utf-8', 'hex') + cipher.final('hex');
 }
 
@@ -16,7 +20,12 @@ export function encryptSecret(secret: string) {
  * @returns decrypted value
  */
 export function decryptSecret(secret: string) {
-  const decipher = createDecipheriv('aes256', process.env.SECRETS_KEY, process.env.SECRETS_IV);
-  const decrypted = decipher.update(secret, 'hex', 'utf-8') + decipher.final('utf-8');
+  const decipher = createDecipheriv(
+    'aes256',
+    process.env.SECRETS_KEY,
+    process.env.SECRETS_IV
+  );
+  const decrypted =
+    decipher.update(secret, 'hex', 'utf-8') + decipher.final('utf-8');
   return decrypted.toString();
 }

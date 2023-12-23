@@ -20,11 +20,11 @@ import { useForm } from 'react-hook-form';
 import { SectionHeading, confirmDialog } from '@/components/ui';
 
 type Props = {
-  project: (Project & {
+  project: Project & {
     Secret: {
       name: string;
     }[];
-  });
+  };
   [key: string]: any;
 };
 
@@ -59,7 +59,7 @@ export default function Secrets({ project, ...props }: Props) {
     const newSecret = getValues();
 
     if (project.Secret.some(({ name }) => name === newSecret.name)) {
-      toast({ status: "error", title: "Secret with this name already exists" });
+      toast({ status: 'error', title: 'Secret with this name already exists' });
       return;
     }
 
@@ -90,11 +90,17 @@ export default function Secrets({ project, ...props }: Props) {
     <Box {...props}>
       <Flex justifyContent="space-between">
         <SectionHeading heading="🕶️ Secrets">
-          Secrets are variables that can be consumed by the API endpoints in this project during calls.
+          Secrets are variables that can be consumed by the API endpoints in
+          this project during calls.
           <br />
           These are <strong>encrypted and stored</strong> on the database.
         </SectionHeading>
-        <Button colorScheme="green" bg="green.400" rightIcon={<PlusIcon width="16" />} onClick={() => setShowNewForm(true)}>
+        <Button
+          colorScheme="green"
+          bg="green.400"
+          rightIcon={<PlusIcon width="16" />}
+          onClick={() => setShowNewForm(true)}
+        >
           New secret
         </Button>
       </Flex>
@@ -109,13 +115,15 @@ export default function Secrets({ project, ...props }: Props) {
             py="3"
             px="6"
             bg="white"
-            _first={{ roundedTop: "md" }}
+            _first={{ roundedTop: 'md' }}
             _notFirst={{ mt: -1 }}
-            _last={{ roundedBottom: "md" }}
+            _last={{ roundedBottom: 'md' }}
           >
             <Text fontWeight="600">{name}</Text>
             <Tooltip label="Not shown for security" fontSize="xs">
-              <Text color="gray.500" letterSpacing="wide">•••••••••••••</Text>
+              <Text color="gray.500" letterSpacing="wide">
+                •••••••••••••
+              </Text>
             </Tooltip>
             <Tooltip label="Remove this secret" fontSize="xs">
               <IconButton
@@ -131,8 +139,19 @@ export default function Secrets({ project, ...props }: Props) {
           </Flex>
         ))}
         {showNewForm && (
-          <Flex border="1px" borderColor="gray.200" p="3" bg="white" _first={{ roundedTop: "md" }} _notFirst={{ mt: -1 }} _last={{ roundedBottom: "md" }}>
-            <form onSubmit={handleSubmit(createSecret)} style={{ width: '100%' }}>
+          <Flex
+            border="1px"
+            borderColor="gray.200"
+            p="3"
+            bg="white"
+            _first={{ roundedTop: 'md' }}
+            _notFirst={{ mt: -1 }}
+            _last={{ roundedBottom: 'md' }}
+          >
+            <form
+              onSubmit={handleSubmit(createSecret)}
+              style={{ width: '100%' }}
+            >
               <Flex justifyContent="space-between" alignItems="center">
                 <Input
                   placeholder="Secret name"
@@ -151,16 +170,35 @@ export default function Secrets({ project, ...props }: Props) {
                     {...register('value')}
                   />
                   <InputRightElement w="4rem">
-                    <Button size="xs" h="1.75rem" onClick={() => setShowValue(!showValue)}>
+                    <Button
+                      size="xs"
+                      h="1.75rem"
+                      onClick={() => setShowValue(!showValue)}
+                    >
                       {showValue ? 'Hide' : 'Show'}
                     </Button>
                   </InputRightElement>
                 </InputGroup>
 
-                <Button type="submit" size="sm" ml="8" mr="2" px="6" colorScheme="green" bg="green.400" isLoading={creatingSecret}>
+                <Button
+                  type="submit"
+                  size="sm"
+                  ml="8"
+                  mr="2"
+                  px="6"
+                  colorScheme="green"
+                  bg="green.400"
+                  isLoading={creatingSecret}
+                >
                   Save
                 </Button>
-                <Button type="button" size="sm" colorScheme="gray" px="6" onClick={closeCreation}>
+                <Button
+                  type="button"
+                  size="sm"
+                  colorScheme="gray"
+                  px="6"
+                  onClick={closeCreation}
+                >
                   Cancel
                 </Button>
               </Flex>
@@ -169,7 +207,7 @@ export default function Secrets({ project, ...props }: Props) {
         )}
         {project.Secret.length === 0 && !showNewForm && (
           <Box mt="16" color="gray.600" fontWeight="600" textAlign="center">
-            No secrets added yet. Time to add one!  🕶️
+            No secrets added yet. Time to add one! 🕶️
           </Box>
         )}
       </Box>

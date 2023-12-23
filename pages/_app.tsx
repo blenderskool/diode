@@ -7,12 +7,12 @@ import '@fontsource/raleway/800.css';
 import { Footer, MockDeploymentBanner } from '@/components/ui';
 import theme from '@/lib/chakra-theme';
 
-const isMock = process.env.NEXT_PUBLIC_MOCK_DEPLOYMENT === "true";
+const isMock = process.env.NEXT_PUBLIC_MOCK_DEPLOYMENT === 'true';
 
 function App({ Component, pageProps }) {
   return (
     <ChakraProvider theme={theme}>
-      { isMock && <MockDeploymentBanner /> }
+      {isMock && <MockDeploymentBanner />}
       <Box bg="gray.100">
         <Container maxWidth="container.lg">
           <Flex

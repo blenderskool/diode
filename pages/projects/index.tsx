@@ -15,7 +15,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Text
+  Text,
 } from '@chakra-ui/react';
 import { PlusIcon } from '@heroicons/react/outline';
 import { Project } from '@prisma/client';
@@ -29,12 +29,12 @@ import { useState } from 'react';
 import { HelpText } from '@/components/ui';
 import prisma from '@/lib/prisma';
 
-type ProjectData = (Project & {
+type ProjectData = Project & {
   _count: {
     ApiRoute: number;
     Secret: number;
   };
-});
+};
 
 export const getServerSideProps: GetServerSideProps = async () => {
   const projects: ProjectData[] = await prisma.project.findMany({
@@ -43,16 +43,16 @@ export const getServerSideProps: GetServerSideProps = async () => {
         select: {
           ApiRoute: true,
           Secret: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   return { props: { projects } };
-}
+};
 
 type Props = {
-  projects: ProjectData[],
+  projects: ProjectData[];
 };
 
 export default function Projects({ projects }: Props) {
@@ -66,7 +66,10 @@ export default function Projects({ projects }: Props) {
     if (creatingProject) return;
 
     setCreatingProject(true);
-    const response = await axios.post(`/api/projects/create?name=${newProjectName}`, { name: newProjectName });
+    const response = await axios.post(
+      `/api/projects/create?name=${newProjectName}`,
+      { name: newProjectName }
+    );
     const project: Project = response.data;
     setCreatingProject(false);
 
@@ -79,15 +82,23 @@ export default function Projects({ projects }: Props) {
         <title>Projects | Diode 🔌</title>
       </Head>
       <Flex justifyContent="space-between">
-        <Heading as="h1" size="lg" fontWeight="800">Projects</Heading>
-        <Button colorScheme="green" bg="green.400" rightIcon={<PlusIcon width="16" />} onClick={() => setNewProjectOpen(true)}>
+        <Heading as="h1" size="lg" fontWeight="800">
+          Projects
+        </Heading>
+        <Button
+          colorScheme="green"
+          bg="green.400"
+          rightIcon={<PlusIcon width="16" />}
+          onClick={() => setNewProjectOpen(true)}
+        >
           New Project
         </Button>
       </Flex>
       <HelpText mt="4">
         Projects are used to group related API endpoints.
         <br />
-        Every project has a set of Secrets which are consumed by APIs in that project.
+        Every project has a set of Secrets which are consumed by APIs in that
+        project.
       </HelpText>
       <Grid mt="16" gap="4" templateColumns="repeat(3, 1fr)">
         {projects.map((project) => (
@@ -102,16 +113,22 @@ export default function Projects({ projects }: Props) {
             px="8"
             py="4"
             _hover={{
-              textDecoration: "none",
-              shadow: "md",
-              transform: "scale(1.01)",
+              textDecoration: 'none',
+              shadow: 'md',
+              transform: 'scale(1.01)',
             }}
           >
             <Text fontWeight="700" fontSize="xl" fontFamily="heading">
               {project.name}
             </Text>
-            <Text color="gray.500" fontSize="smaller" fontWeight="medium" mt="2">
-              {project._count.ApiRoute} API routes &bull; {project._count.Secret} Secrets
+            <Text
+              color="gray.500"
+              fontSize="smaller"
+              fontWeight="medium"
+              mt="2"
+            >
+              {project._count.ApiRoute} API routes &bull;{' '}
+              {project._count.Secret} Secrets
             </Text>
           </Link>
         ))}
@@ -126,20 +143,35 @@ export default function Projects({ projects }: Props) {
         <ModalOverlay />
         <ModalContent p="2" pt="4">
           <ModalHeader>
-            <Heading fontFamily="heading" fontWeight="700" fontSize="2xl">New project</Heading>
-            <Text fontSize="small" color="gray.500" fontWeight="500" mt="2">Let&apos;s get building! 💪</Text>
+            <Heading fontFamily="heading" fontWeight="700" fontSize="2xl">
+              New project
+            </Heading>
+            <Text fontSize="small" color="gray.500" fontWeight="500" mt="2">
+              Let&apos;s get building! 💪
+            </Text>
           </ModalHeader>
 
           <form onSubmit={createProject}>
             <ModalBody py={8}>
               <FormControl>
                 <FormLabel>Project name</FormLabel>
-                <Input placeholder="Exotic APIs" required value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} />
+                <Input
+                  placeholder="Exotic APIs"
+                  required
+                  value={newProjectName}
+                  onChange={(e) => setNewProjectName(e.target.value)}
+                />
               </FormControl>
             </ModalBody>
 
             <ModalFooter>
-              <Button type="submit" colorScheme="green" bg="green.400" width="full" isLoading={creatingProject}>
+              <Button
+                type="submit"
+                colorScheme="green"
+                bg="green.400"
+                width="full"
+                isLoading={creatingProject}
+              >
                 Create project ›
               </Button>
             </ModalFooter>
@@ -148,7 +180,6 @@ export default function Projects({ projects }: Props) {
           <ModalCloseButton />
         </ModalContent>
       </Modal>
-
     </>
   );
 }
