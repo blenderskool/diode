@@ -12,9 +12,20 @@ import type {
  * @param url URL object
  * @param query query params
  */
-export function addQueryParams(url: URL, query: QueryParams) {
-  for (const [key, value] of query) {
-    url.searchParams.append(key, value);
+export function addQueryParams(url: URL, query: QueryParams): void;
+export function addQueryParams(url: string, query: QueryParams): string;
+export function addQueryParams(
+  url: URL | string,
+  query: QueryParams
+): string | void {
+  if (typeof url === 'string') {
+    url = new URL(url.split('?')[0]);
+    addQueryParams(url, query);
+    return decodeURI(url.href);
+  } else {
+    for (const [key, value] of query) {
+      url.searchParams.append(key, value);
+    }
   }
 }
 

@@ -28,7 +28,7 @@ import copy from 'copy-to-clipboard';
 import type { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
 import { DangerZone, Secrets } from '@/components/sections';
@@ -43,6 +43,8 @@ import {
   confirmDialog,
 } from '@/components/ui';
 import ProjectSecrets from '@/lib/contexts/ProjectSecrets';
+import { useSyncUrlAndParams } from '@/lib/hooks/use-sync-url-and-params';
+import { addQueryParams } from '@/lib/internals/utils';
 import {
   CachingOptions,
   PartialQueryOptions,
@@ -91,24 +93,6 @@ type FormData = {
   caching: CachingOptions;
 
   partialQuery: PartialQueryOptions;
-};
-
-const applyQueryParams = (apiUrl: string, query: QueryParams) => {
-  const url = new URL(apiUrl);
-  const searchParams = new URLSearchParams(query);
-
-  /**
-   * Direct toString() is not used as it encodes the special characters
-   * making URL harder to read
-   */
-  const queryString = [...searchParams.entries()]
-    .map(([key, value]) => `${key}=${value}`)
-    .join('&');
-
-  return (
-    decodeURI(url.origin + url.pathname) +
-    (queryString ? '?' + queryString : '')
-  );
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
@@ -162,7 +146,7 @@ export default function ApiRoutePage({ apiRoute }: Props) {
     formState: { isSubmitting },
   } = useForm<FormData>({
     defaultValues: {
-      apiUrl: applyQueryParams(
+      apiUrl: addQueryParams(
         apiRoute.apiUrl,
         apiRoute.queryParams as QueryParams
       ),
@@ -219,41 +203,15 @@ export default function ApiRoutePage({ apiRoute }: Props) {
   const toast = useToast();
   const [proxyUrl, setProxyUrl] = useState('');
 
-  const syncUrlAndQueryParams = useCallback(
-    (_, { name, type }) => {
-      if (type !== 'change') return;
-
-      const [apiUrl, queryParams] = getValues(['apiUrl', 'queryParams']);
-
-      try {
-        if (name === 'apiUrl') {
-          const url = new URL(apiUrl);
-          setValue(
-            'queryParams',
-            [...url.searchParams].map(([name, value]) => ({ name, value }))
-          );
-        } else if (name.startsWith('queryParams')) {
-          const qp: QueryParams = queryParams.map(({ name, value }) => [
-            name,
-            value,
-          ]);
-          setValue('apiUrl', applyQueryParams(apiUrl, qp));
-        }
-      } catch (err) {
-        // Ignore error as further updates might resolve correctly
-        console.log(err);
-      }
-    },
-    [setValue, getValues]
-  );
+  const syncUrlAndQueryParams = useSyncUrlAndParams({
+    getValues,
+    setValue,
+    watch,
+  });
 
   useEffect(() => {
     setProxyUrl(`${window.location.origin}/api/v1/${apiRoute.id}`);
   }, [setProxyUrl, apiRoute.id]);
-
-  useEffect(() => {
-    return watch(syncUrlAndQueryParams).unsubscribe;
-  }, [watch, syncUrlAndQueryParams]);
 
   const [
     isRestrictionsEnabled,
