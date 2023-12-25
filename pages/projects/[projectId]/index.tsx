@@ -1,35 +1,15 @@
 import { Divider, Flex, Heading } from '@chakra-ui/react';
-import type { ApiMethod, Project as ProjectType } from '@prisma/client';
 import axios from 'axios';
-import type { GetServerSideProps } from 'next';
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
-import { Apis, DangerZone, Secrets } from '@/components/sections';
+import { Apis, DangerZone, Monitors, Secrets } from '@/components/sections';
 import { ApiStats, BackLink, confirmDialog } from '@/components/ui';
 import prisma from '@/lib/prisma';
 
-type ProjectData = ProjectType & {
-  ApiRoute: {
-    id: string;
-    name: string;
-    apiUrl: string;
-    method: ApiMethod;
-    successes: number;
-    fails: number;
-  }[];
-  Secret: {
-    name: string;
-  }[];
-};
-
-type ProjectStats = {
-  totalSuccesses: number;
-  totalFails: number;
-};
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const id = context.params.projectId as string;
+export const getServerSideProps = (async ({ params }) => {
+  const id = params.projectId as string;
 
   const project = await prisma.project.findUnique({
     where: { id },
@@ -49,6 +29,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
           name: true,
         },
       },
+      Monitor: {
+        select: {
+          name: true,
+          id: true,
+        },
+      },
     },
   });
 
@@ -61,7 +47,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const stats: ProjectStats = {
+  const stats = {
     totalSuccesses: !project
       ? 0
       : project.ApiRoute.reduce((sum, api) => sum + api.successes, 0),
@@ -71,14 +57,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   };
 
   return { props: { project, stats } };
-};
+}) satisfies GetServerSideProps;
 
-type Props = {
-  project: ProjectData;
-  stats: ProjectStats;
-};
-
-export default function Project({ project, stats }: Props) {
+export default function Project({
+  project,
+  stats,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const router = useRouter();
   const projectName =
     project.name + (!project.name.endsWith('project') ? ' project' : '');
@@ -110,6 +94,10 @@ export default function Project({ project, stats }: Props) {
       </Flex>
 
       <Apis mt="20" project={project} />
+
+      <Divider my="20" />
+
+      <Monitors project={project} />
 
       <Divider my="20" />
 
