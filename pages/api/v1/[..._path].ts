@@ -12,7 +12,7 @@ import type {
 } from './types';
 
 import getApiRoute from '@/lib/internals/get-api-route';
-import { decryptSecret } from '@/lib/internals/secrets';
+import { decryptSecrets } from '@/lib/internals/secrets';
 import { sendResponse } from '@/lib/internals/send-response';
 import {
   addQueryParams,
@@ -76,12 +76,7 @@ export default async function handler(
   await runMiddleware(req, res, middlewares.cacheRead(apiRoute));
 
   // Decrypt the project secrets
-  const secrets = Object.fromEntries(
-    apiRoute.project.Secret.map(({ name, secret }) => [
-      name,
-      decryptSecret(secret),
-    ])
-  );
+  const secrets = decryptSecrets(apiRoute.project.Secret);
   const apiUrl = encodeURI(render(decodeURI(apiRoute.apiUrl), secrets));
 
   // Request preparation

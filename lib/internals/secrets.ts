@@ -1,3 +1,4 @@
+import { Secret } from '@prisma/client';
 import { createCipheriv, createDecipheriv } from 'crypto';
 
 /**
@@ -28,4 +29,15 @@ export function decryptSecret(secret: string) {
   const decrypted =
     decipher.update(secret, 'hex', 'utf-8') + decipher.final('utf-8');
   return decrypted.toString();
+}
+
+/**
+ * Decrypts an array of secrets using AES256
+ * @param secrets Array of Secret objects to decrypt
+ * @returns Returns an object with secret names as keys and decrypted values as values
+ */
+export function decryptSecrets(secrets: Secret[]) {
+  return Object.fromEntries(
+    secrets.map(({ name, secret }) => [name, decryptSecret(secret)])
+  );
 }
