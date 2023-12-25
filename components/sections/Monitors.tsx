@@ -111,7 +111,7 @@ export default function Monitors({ project, ...props }: Props) {
               _last={{ roundedBottom: 'md' }}
               _hover={{ bg: 'gray.50' }}
             >
-              <Flex alignItems="center" py="3" px="6">
+              <Flex alignItems="center" py="3.5" px="6">
                 <Text fontWeight="600">
                   <NextLink
                     href={`/projects/${project.id}/monitors/${monitor.id}`}
